@@ -1,0 +1,3 @@
+submodules/*
+old_code/*
+*.pyc

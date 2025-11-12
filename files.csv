@@ -1,0 +1,8 @@
+train_csv,test_csv,constraint
+datasets/adult/train.csv,datasets/adult/test.csv,
+datasets/adult/train.csv,guided_samples_age_40.02_40.02_0.1.csv,mean(age)=40.02
+datasets/adult/train.csv,guided_samples_age_40.0_40.0_0.1.csv,mean(age)=40.02
+datasets/adult/train.csv,guided_samples_workclass_State-gov_education_Bachelors_0.01.csv,"workclass=State-gov,education=Bachelors"
+datasets/adult/train.csv,guided_samples_workclass_State-gov_education_Bachelors_0.1.csv,"workclass=State-gov,education=Bachelors"
+datasets/adult/train.csv,relddpm_multi_workclass_State-gov_education_Bachelors.csv,"workclass=State-gov,education=Bachelors"
+datasets/adult/train.csv,tabdiff_adult_education_11th.csv,education=11th
