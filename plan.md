@@ -1,75 +1,177 @@
-# Synthetic Data Evaluator - Basic Plan
+# Synthetic Data Evaluator - Implementation Checklist
 
 ## Overview
 A CLI tool that evaluates synthetic tabular datasets against real training data using metrics that require only the two CSV files (no additional models, configs, or constraints).
 
-## Scope
-**Input Requirements:**
-- Training data CSV (real data)
-- Synthetic data CSV (generated data)
+---
 
-**Metrics Included:**
-Only metrics that can be computed directly from comparing the two datasets without external dependencies.
+## 📋 Implementation Checklist
 
-## CLI Interface
-```bash
-python -m sdeval.main \
-    --training-data-csv-path <real_data.csv> \
-    --input-path <synthetic_data.csv> \
-    --output-dir <output_dir> \
-    [--seed <int>]
-```
+### Phase 1: Project Setup
+- [ ] Create project structure
+  - [ ] `sdeval/__init__.py`
+  - [ ] `sdeval/main.py`
+  - [ ] `sdeval/evaluator.py`
+  - [ ] `sdeval/data_loader.py`
+  - [ ] `sdeval/metrics/__init__.py`
+  - [ ] `sdeval/reporting/__init__.py`
+  - [ ] `sdeval/reporting/writer.py`
+- [ ] Set up `pyproject.toml` with dependencies
+  - [ ] pandas
+  - [ ] numpy
+  - [ ] scipy
+  - [ ] scikit-learn
+- [ ] Create `.gitignore` for Python projects
 
-## Metrics Suite
+### Phase 2: Core Infrastructure
+- [ ] **Data Loader** (`data_loader.py`)
+  - [ ] Implement CSV loading function
+  - [ ] Add error handling for missing files
+  - [ ] Add error handling for malformed CSVs
+  - [ ] Validate both DataFrames have data
+  - [ ] Auto-detect numerical vs categorical columns
 
-### 1. Statistical Fidelity
-Compare distributions between real and synthetic data:
+- [ ] **Metric Context** (`metrics/__init__.py`)
+  - [ ] Define `MetricContext` dataclass
+    - [ ] `real_df: pd.DataFrame`
+    - [ ] `synthetic_df: pd.DataFrame`
+    - [ ] `numerical_columns: List[str]`
+    - [ ] `categorical_columns: List[str]`
+    - [ ] `seed: Optional[int]`
+  - [ ] Implement metric registry pattern
+  - [ ] Create `@register_metric` decorator
+  - [ ] Create `get_all_metrics()` function
 
-- **Alpha Precision**: Fraction of synthetic categorical values that exist in real data
-- **Beta Recall**: Fraction of real categorical values covered by synthetic data
-- **Mean Absolute Difference**: Average difference in column means
-- **Std Absolute Difference**: Average difference in column standard deviations
-- **Wasserstein Distance**: Distribution distance for numerical columns
+- [ ] **CLI Interface** (`main.py`)
+  - [ ] Add argparse setup
+    - [ ] `--training-data-csv-path` (required)
+    - [ ] `--input-path` (required)
+    - [ ] `--output-dir` (required)
+    - [ ] `--seed` (optional)
+  - [ ] Validate input arguments
+  - [ ] Set random seeds (numpy, random)
+  - [ ] Call evaluator
+  - [ ] Handle errors and exit codes
 
-### 2. Coverage & Diversity
-Measure how well synthetic data covers the real data space:
+- [ ] **Evaluator** (`evaluator.py`)
+  - [ ] Implement main evaluation orchestration
+  - [ ] Load data via data_loader
+  - [ ] Auto-detect column types
+  - [ ] Create MetricContext
+  - [ ] Execute all registered metrics
+  - [ ] Collect results into single dict
+  - [ ] Call report writer
 
-- **Uniqueness Ratio**: Fraction of unique rows in synthetic data
-- **Rare Category Retention**: Fraction of rare real categories (< 5% frequency) present in synthetic
-- **Missing Category Ratio**: Fraction of real categories absent in synthetic
-- **Missingness Delta**: Difference in null/missing value rates
+- [ ] **Report Writer** (`reporting/writer.py`)
+  - [ ] Implement JSON output function
+  - [ ] Add metadata section (paths, timestamp, seed)
+  - [ ] Ensure output directory exists
+  - [ ] Write formatted JSON file
+  - [ ] Add error handling for write failures
 
-### 3. Privacy (Basic)
-Distance-based privacy metrics:
+### Phase 3: Statistical Fidelity Metrics
+- [ ] **Create** `metrics/statistical.py`
+- [ ] **Implement Alpha Precision**
+  - [ ] For each categorical column, compute synthetic values ⊆ real values
+  - [ ] Return average across all categorical columns
+- [ ] **Implement Beta Recall**
+  - [ ] For each categorical column, compute real values ⊆ synthetic values
+  - [ ] Return average across all categorical columns
+- [ ] **Implement Mean Absolute Difference**
+  - [ ] Compute mean for each numerical column in both datasets
+  - [ ] Calculate absolute differences
+  - [ ] Return average across all numerical columns
+- [ ] **Implement Std Absolute Difference**
+  - [ ] Compute std for each numerical column in both datasets
+  - [ ] Calculate absolute differences
+  - [ ] Return average across all numerical columns
+- [ ] **Implement Wasserstein Distance**
+  - [ ] Use `scipy.stats.wasserstein_distance`
+  - [ ] Compute for each numerical column
+  - [ ] Return average across all numerical columns
+- [ ] **Register metric** with `@register_metric("statistical")`
+- [ ] **Return dict** with all 5 metrics
 
-- **DCR (Distance to Closest Record)**: Rate of synthetic records too close to real records
-- **NNDR (Nearest Neighbor Distance Ratio)**: Average ratio of distances to nearest vs second-nearest real neighbor
-- **Mean k-NN Distance**: Average distance from synthetic to nearest real neighbor
+### Phase 4: Coverage & Diversity Metrics
+- [ ] **Create** `metrics/coverage.py`
+- [ ] **Implement Uniqueness Ratio**
+  - [ ] Count unique rows in synthetic data
+  - [ ] Divide by total rows
+- [ ] **Implement Rare Category Retention**
+  - [ ] Identify rare categories in real data (< 5% frequency)
+  - [ ] Check how many appear in synthetic data
+  - [ ] Return retention rate
+- [ ] **Implement Missing Category Ratio**
+  - [ ] Get all unique categories from real data
+  - [ ] Count how many are missing in synthetic
+  - [ ] Return missing fraction
+- [ ] **Implement Missingness Delta**
+  - [ ] Compute null rate in real data
+  - [ ] Compute null rate in synthetic data
+  - [ ] Return absolute difference
+- [ ] **Register metric** with `@register_metric("coverage")`
+- [ ] **Return dict** with all 4 metrics
 
-## Architecture
+### Phase 5: Privacy Metrics
+- [ ] **Create** `metrics/privacy.py`
+- [ ] **Implement k-NN Distance Computation**
+  - [ ] Standardize numerical features
+  - [ ] Handle categorical features (one-hot encoding)
+  - [ ] Use `sklearn.neighbors.NearestNeighbors`
+  - [ ] Find k=2 nearest real neighbors for each synthetic row
+- [ ] **Implement DCR (Distance to Closest Record)**
+  - [ ] Get distance to nearest neighbor (k=1)
+  - [ ] Count records below threshold (1e-8)
+  - [ ] Return rate
+- [ ] **Implement NNDR (Nearest Neighbor Distance Ratio)**
+  - [ ] Get distances to k=2 nearest neighbors
+  - [ ] Compute ratio d1/d2 for each synthetic row
+  - [ ] Return mean ratio
+- [ ] **Implement Mean k-NN Distance**
+  - [ ] Get distance to nearest neighbor (k=1)
+  - [ ] Return mean distance
+- [ ] **Register metric** with `@register_metric("privacy")`
+- [ ] **Return dict** with all 3 metrics
 
-```
-sdeval/
-├── main.py              # CLI entry point
-├── evaluator.py         # Metric orchestration
-├── data_loader.py       # CSV loading
-├── metrics/
-│   ├── __init__.py      # MetricContext + registry
-│   ├── statistical.py   # Statistical fidelity metrics
-│   ├── coverage.py      # Coverage & diversity metrics
-│   └── privacy.py       # Distance-based privacy metrics
-└── reporting/
-    └── writer.py        # JSON output writer
-```
+### Phase 6: Integration & Testing
+- [ ] **End-to-end test**
+  - [ ] Run with Adult dataset
+  - [ ] Verify JSON output is created
+  - [ ] Verify all metrics are present
+  - [ ] Check for errors/warnings
+- [ ] **Edge case testing**
+  - [ ] Test with missing values
+  - [ ] Test with all-categorical dataset
+  - [ ] Test with all-numerical dataset
+  - [ ] Test with single-column dataset
+  - [ ] Test with mismatched columns
+- [ ] **Reproducibility test**
+  - [ ] Run twice with same seed
+  - [ ] Verify identical outputs
 
-## Execution Flow
+### Phase 7: Documentation
+- [ ] Create `README.md`
+  - [ ] Installation instructions
+  - [ ] Quick start example
+  - [ ] CLI usage
+  - [ ] Metric explanations
+- [ ] Add docstrings to all functions
+- [ ] Add inline comments for complex logic
+- [ ] Create example output JSON
 
-1. **Load Data**: Read both CSVs into pandas DataFrames
-2. **Auto-detect Schema**: Identify numerical vs categorical columns
-3. **Compute Metrics**: Run all three metric suites
-4. **Generate Report**: Output single JSON file with all metrics
+---
 
-## Output Format
+## 🎯 Success Criteria
+
+- [ ] CLI runs without errors: `python -m sdeval.main --training-data-csv-path train.csv --input-path synthetic.csv --output-dir outputs/`
+- [ ] All 12 metrics computed and present in output
+- [ ] JSON output is valid and well-formatted
+- [ ] Reproducible results with `--seed` parameter
+- [ ] Handles common edge cases gracefully
+
+---
+
+## 📦 Expected Output Structure
 
 ```json
 {
@@ -100,37 +202,11 @@ sdeval/
 }
 ```
 
-## Implementation Notes
+---
 
-### What's Included
-- No external model dependencies (no plausibility scoring)
-- No configuration files required
-- No constraint definitions needed
-- No ML utility metrics (no target column required)
-- Automatic column type detection
-- Minimal setup - just point to two CSV files
+## 🚫 Out of Scope (Future Extensions)
 
-### Key Design Decisions
-1. **Auto-detection**: Column types (numerical/categorical) detected automatically
-2. **No Configuration**: All parameters are defaults or auto-detected
-3. **Simple Output**: Single JSON file with flat metric structure
-4. **Reproducible**: Optional seed parameter for deterministic results
-
-### Dependencies
-- pandas: Data loading and manipulation
-- numpy: Numerical computations
-- scipy: Wasserstein distance, k-NN calculations
-- scikit-learn: Distance metrics for privacy
-
-## Success Criteria
-A working tool that:
-1. Loads two CSV files without errors
-2. Computes all metrics automatically
-3. Produces a valid JSON output
-4. Handles edge cases (missing values, different column orders, type mismatches)
-5. Runs deterministically with seed parameter
-
-## Future Extensions (Not in Basic Version)
+- k-anonymity (requires config for quasi-identifiers)
 - Constraint checking (requires constraint definitions)
 - ML utility metrics (requires target column specification)
 - Plausibility scoring (requires trained model)
