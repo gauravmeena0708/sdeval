@@ -1,10 +1,56 @@
 # Synthetic Data Evaluator Plan
 
 ## 1. Goals & Scope
-- Deliver a CLI tool that scores synthetic tabular datasets against real (training) data while honoring user-supplied constraints (e.g., `COL = VAL`, `mean(COL) = N`, `COL <= N`, population share targets).
-- Provide actionable metrics across fidelity, constraint adherence, coverage/diversity, downstream ML utility, plausibility, and privacy.
-- Support CSV inputs (single file or directory) and produce machine-readable reports plus human-friendly summaries.
-- Non-goals: building/training synthetic generators, guaranteeing formal differential privacy for every model (placeholder only), or supporting unstructured data.
+
+### Primary Goal
+Deliver a CLI tool that evaluates synthetic tabular datasets (both **conditional** and **unconditional**) against real training data by measuring quality across multiple dimensions: statistical fidelity, constraint adherence, coverage/diversity, ML utility, plausibility, and privacy.
+
+### Generator Types Supported
+
+**1. Unconditional Generators**
+- Generate data by learning the joint distribution of all features without explicit constraints
+- Examples: GANs, VAEs, diffusion models, copula-based methods
+- Evaluation focus: How well does the learned distribution naturally satisfy domain requirements?
+
+**2. Conditional/Constraint-Aware Generators**
+- Trained or configured to satisfy specific business rules or statistical targets during generation
+- Examples: Constrained optimization (e.g., linear programming), rule-based synthesis, conditional GANs with constraint enforcement
+- Evaluation focus: Does the generator successfully enforce its declared constraints while maintaining quality?
+
+### Constraint Role in Evaluation
+
+User-supplied constraints serve as **evaluation criteria**, with different interpretations depending on generator type:
+
+**For Unconditional Generators:**
+- Constraints are **post-hoc quality checks**: Does the synthetic data happen to satisfy domain requirements?
+- Violations indicate the generator hasn't learned these patterns from the real data
+- Example: If real data has `mean(age) = 42`, does synthetic data achieve similar statistics naturally?
+
+**For Conditional Generators:**
+- Constraints are **verification of promised guarantees**: Does the generator enforce what it claims?
+- Violations indicate implementation bugs or insufficient constraint enforcement
+- Example: If generator claims to enforce `share(gender=F) = 0.52`, verify this holds in output
+
+### Constraint Types
+Constraints represent:
+- **Domain knowledge**: Business rules that must hold (e.g., "age >= 18 for employed workers")
+- **Statistical targets**: Desired distributional properties (e.g., "maintain 50/50 gender ratio")
+- **Quality thresholds**: Acceptable bounds for synthetic data (e.g., "max hours worked <= 80")
+- **Generator specifications**: Declared guarantees from conditional generators (e.g., "equality constraint on status column")
+
+### Scope
+- Support CSV inputs (single file or directory) for batch evaluation
+- Produce machine-readable reports (JSON) plus human-friendly summaries
+- Enable comparison of multiple synthetic generators (conditional vs unconditional, or different architectures)
+- Provide actionable feedback: which constraints are violated, by how much, and where quality issues exist
+- Flexible constraint interpretation: users specify constraints based on their evaluation goals (domain requirements, generator verification, or both)
+
+### Non-Goals
+- Building or training synthetic data generators
+- Enforcing constraints during generation (generator is treated as black-box)
+- Automatically inferring which generators are conditional vs unconditional (user context-dependent)
+- Guaranteeing formal differential privacy (placeholder only for future integration)
+- Supporting unstructured data (images, text, time series)
 
 ## 2. Success Criteria & Maturity Levels
 
@@ -100,6 +146,38 @@ Key fields (all optional unless noted):
 All rules support:
 - `hard`: boolean (default: true for equality/expression/min/max, false for mean/share) - determines if violation causes exit code failure
 - `tolerance` or `tolerance_pct`: allowed deviation for soft constraints
+
+**Typical Usage Patterns:**
+
+*Evaluating Unconditional Generators:*
+```json
+{
+  "constraints": {
+    "rules": [
+      {"id": "mean_age", "type": "mean", "column": "age", "target": 42.0, "tolerance": 2.0, "hard": false},
+      {"id": "share_female", "type": "share", "column": "gender", "value": "F", "target_pct": 0.52, "tolerance_pct": 0.05, "hard": false}
+    ]
+  }
+}
+```
+- Use soft constraints (hard=false) with generous tolerances
+- Focus on statistical similarity, not exact enforcement
+- Violations indicate the generator didn't learn the distribution well
+
+*Evaluating Conditional Generators:*
+```json
+{
+  "constraints": {
+    "rules": [
+      {"id": "enforce_adult", "type": "expression", "expression": "age >= 18", "hard": true},
+      {"id": "enforce_share", "type": "share", "column": "income", "value": ">50K", "target_pct": 0.25, "tolerance_pct": 0.01, "hard": true}
+    ]
+  }
+}
+```
+- Use hard constraints (hard=true) with tight tolerances
+- Reflects the generator's declared guarantees
+- Violations indicate bugs or insufficient constraint enforcement
 
 **Phase 3 Roadmap:**
 - Conditional rules: `{"type": "conditional", "condition": "age < 18", "then": {"column": "income", "value": null}}`
@@ -488,12 +566,17 @@ No changes to `evaluator.py` needed - just import the module in `metrics/__init_
 ### What Works Today (Phase 1 ✅)
 
 The tool is a **functional MVP** suitable for:
-- Evaluating synthetic datasets against real training data
-- Enforcing equality, mean, share, and boundary constraints
+- Evaluating both conditional and unconditional synthetic data generators
+- Checking constraint adherence (equality, mean, share, boundary rules)
 - Measuring basic statistical fidelity (Wasserstein, mean/std alignment, categorical coverage)
 - Assessing ML utility via train-on-synthetic/test-on-real workflow
 - Detecting privacy leakage via k-NN distance metrics
 - Scoring plausibility with external autoregressive models
+
+**Use Cases:**
+- Compare unconditional generators (GAN, VAE, etc.) by how well they learn distributional properties
+- Verify conditional generators enforce their declared constraints
+- Benchmark multiple generators on the same dataset with standardized metrics
 
 **Quick Start:**
 ```bash
@@ -536,18 +619,32 @@ Advanced features for research/production scale:
 
 ### Recommendations
 
-**For immediate use:**
-- Treat constraint results as advisory (no exit code enforcement)
-- Manually verify outputs against expected properties
+**For evaluating unconditional generators:**
+- Define constraints based on real data properties (use real data stats as targets)
+- Use soft constraints (hard=false) with reasonable tolerances (e.g., ±5% for shares, ±10% for means)
+- Focus on statistical metrics (fidelity, coverage) rather than exact constraint enforcement
+- Compare multiple generators using the same constraint set for fair benchmarking
+
+**For evaluating conditional generators:**
+- Define constraints matching the generator's declared guarantees
+- Use hard constraints (hard=true) with tight tolerances (e.g., ±1% for enforced shares)
+- Prioritize constraint metrics to verify enforcement correctness
+- Set exit codes to fail on hard constraint violations for CI/CD integration
+
+**For immediate use (both types):**
+- Manually verify outputs against expected properties (exit code enforcement not yet implemented)
 - Use fixed seeds for reproducibility where possible
+- Start with a subset of metrics to understand tool behavior
 
 **For production deployment:**
 - Complete Phase 2 checklist above
 - Add monitoring/logging infrastructure
 - Create golden test outputs for regression testing
 - Document plausibility module's auto-training behavior
+- Establish clear thresholds for constraint pass/fail based on generator type
 
 **For research/advanced use:**
 - Contribute Phase 3 features as needed
 - Consider forking for specialized metrics (fairness, causality, etc.)
 - Extend MetricContext with pre-computed metadata to reduce duplication
+- Add generator metadata field to track conditional vs unconditional type
