@@ -2,7 +2,7 @@
 
 A comprehensive toolkit for evaluating synthetic tabular datasets against real training data. Compute statistical fidelity, coverage, privacy metrics, and generate comparison visualizations.
 
-[![Tests](https://github.com/gauravmeena0708/sdeval/workflows/tests/badge.svg)](https://github.com/gauravmeena0708/sdeval/actions)
+[![Tests](https://github.com/gauravmeena0708/sdeval/actions/workflows/tests.yml/badge.svg)](https://github.com/gauravmeena0708/sdeval/actions)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
 ## 🎯 Features
