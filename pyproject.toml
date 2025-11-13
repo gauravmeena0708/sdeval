@@ -15,6 +15,7 @@ dependencies = [
     "scipy",
     "matplotlib",
     "seaborn",
+    "torch",
 ]
 
 [project.optional-dependencies]
