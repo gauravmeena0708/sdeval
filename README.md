@@ -70,21 +70,21 @@ stats = compute_statistical_metrics(
     col_types['numerical_columns'],
     col_types['categorical_columns']
 )
-print(f"Alpha Precision: {stats['alpha_precision']:.3f}")
-print(f"Beta Recall: {stats['beta_recall']:.3f}")
-print(f"Mean Absolute Difference: {stats['mean_abs_mean_diff']:.3f}")
-print(f"Std Absolute Difference: {stats['mean_abs_std_diff']:.3f}")
-print(f"Wasserstein Distance: {stats['avg_wasserstein']:.3f}")
+print(f"Alpha Precision: {stats['statistical_alpha_precision']:.3f}")
+print(f"Beta Recall: {stats['statistical_beta_recall']:.3f}")
+print(f"Mean Absolute Difference: {stats['statistical_mean_abs_mean_diff']:.3f}")
+print(f"Std Absolute Difference: {stats['statistical_mean_abs_std_diff']:.3f}")
+print(f"Wasserstein Distance: {stats['statistical_avg_wasserstein']:.3f}")
 
 # Compute coverage metrics
 coverage = compute_coverage_metrics(
     real_df, synthetic_df,
     col_types['categorical_columns']
 )
-print(f"Uniqueness Ratio: {coverage['uniqueness_ratio']:.3f}")
-print(f"Rare Category Retention: {coverage['rare_category_retention']:.3f}")
-print(f"Missing Category Ratio: {coverage['missing_category_ratio']:.3f}")
-print(f"Missingness Delta: {coverage['missingness_delta']:.3f}")
+print(f"Uniqueness Ratio: {coverage['coverage_uniqueness_ratio']:.3f}")
+print(f"Rare Category Retention: {coverage['coverage_rare_category_retention']:.3f}")
+print(f"Missing Category Ratio: {coverage['coverage_missing_category_ratio']:.3f}")
+print(f"Missingness Delta: {coverage['coverage_missingness_delta']:.3f}")
 
 # Compute privacy metrics (use samples for large datasets)
 privacy = compute_privacy_metrics(
@@ -176,17 +176,17 @@ print(f"Results saved to {output_dir}")
     "categorical_columns": ["workclass", "education", "marital.status", "occupation", "relationship", "race", "sex", "native.country", "income"]
   },
   "statistical": {
-    "alpha_precision": 0.956,
-    "beta_recall": 0.943,
-    "mean_abs_mean_diff": 245.67,
-    "mean_abs_std_diff": 123.45,
-    "avg_wasserstein": 0.034
+    "statistical_alpha_precision": 0.956,
+    "statistical_beta_recall": 0.943,
+    "statistical_mean_abs_mean_diff": 245.67,
+    "statistical_mean_abs_std_diff": 123.45,
+    "statistical_avg_wasserstein": 0.034
   },
   "coverage": {
-    "uniqueness_ratio": 0.987,
-    "rare_category_retention": 0.823,
-    "missing_category_ratio": 0.045,
-    "missingness_delta": 0.001
+    "coverage_uniqueness_ratio": 0.987,
+    "coverage_rare_category_retention": 0.823,
+    "coverage_missing_category_ratio": 0.045,
+    "coverage_missingness_delta": 0.001
   },
   "privacy": {
     "dcr_rate": 0.012,
@@ -399,11 +399,12 @@ tests/
 ├── test_statistical_metrics.py  # Statistical fidelity (16 tests)
 ├── test_coverage_metrics.py     # Coverage & diversity (16 tests)
 ├── test_privacy_metrics.py      # Privacy analysis (13 tests)
+├── test_constraint_metrics.py   # Constraint satisfaction (18 tests)
 ├── test_visualization.py        # Visualization generation (6 tests)
 └── test_integration.py          # End-to-end workflows (3 tests)
 ```
 
-**Total: 61 tests** covering all functionality
+**Total: 80 tests** covering all functionality
 
 ## 📁 Project Structure
 
@@ -496,7 +497,7 @@ def compute_my_metric(real_df: pd.DataFrame,
 @register_metric("my_metric")
 def compute_my_metric_registry(ctx: MetricContext) -> Dict[str, float]:
     return {
-        'my_metric': compute_my_metric(
+        'my_metric_value': compute_my_metric(
             ctx.real_df,
             ctx.synthetic_df,
             ctx.numerical_columns
