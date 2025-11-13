@@ -4,7 +4,7 @@ Visualization module for generating real vs synthetic comparison plots.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -176,3 +176,153 @@ def create_single_column_plot(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
     plt.close()
+
+
+def create_qq_plots(
+    real_df: pd.DataFrame,
+    synthetic_df: pd.DataFrame,
+    numerical_columns: List[str],
+    output_path: Path,
+) -> None:
+    """Create QQ plots comparing distributions of numerical columns."""
+    columns = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns]
+    if not columns:
+        return
+
+    ncols = min(2, len(columns))
+    nrows = (len(columns) + ncols - 1) // ncols
+    fig, axes = plt.subplots(nrows, ncols, figsize=(6 * ncols, 4 * nrows))
+    axes = np.atleast_1d(axes).flatten()
+
+    for idx, col in enumerate(columns):
+        ax = axes[idx]
+        real_vals = pd.to_numeric(real_df[col], errors='coerce').dropna()
+        syn_vals = pd.to_numeric(synthetic_df[col], errors='coerce').dropna()
+        if real_vals.empty or syn_vals.empty:
+            ax.set_visible(False)
+            continue
+        quantile_count = min(len(real_vals), len(syn_vals), 200)
+        quantiles = np.linspace(0.01, 0.99, quantile_count)
+        real_quantiles = np.quantile(real_vals, quantiles)
+        syn_quantiles = np.quantile(syn_vals, quantiles)
+        ax.scatter(real_quantiles, syn_quantiles, s=15, alpha=0.7, color='teal')
+        min_val = min(real_quantiles.min(), syn_quantiles.min())
+        max_val = max(real_quantiles.max(), syn_quantiles.max())
+        ax.plot([min_val, max_val], [min_val, max_val], ls='--', color='gray')
+        ax.set_title(f"QQ Plot: {col}")
+        ax.set_xlabel("Real Quantiles")
+        ax.set_ylabel("Synthetic Quantiles")
+        ax.grid(alpha=0.3)
+
+    for idx in range(len(columns), len(axes)):
+        axes[idx].axis('off')
+
+    plt.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+
+def create_correlation_heatmaps(
+    real_df: pd.DataFrame,
+    synthetic_df: pd.DataFrame,
+    numerical_columns: List[str],
+    output_path: Path,
+) -> None:
+    """Create side-by-side correlation heatmaps for real vs synthetic data."""
+    columns = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns]
+    if len(columns) < 2:
+        return
+
+    real_corr = real_df[columns].corr().fillna(0)
+    syn_corr = synthetic_df[columns].corr().fillna(0)
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    sns.heatmap(real_corr, ax=axes[0], cmap='YlGnBu', vmin=-1, vmax=1, annot=False)
+    axes[0].set_title("Real Correlation")
+    sns.heatmap(syn_corr, ax=axes[1], cmap='YlOrRd', vmin=-1, vmax=1, annot=False)
+    axes[1].set_title("Synthetic Correlation")
+
+    plt.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+
+def create_constraint_violation_chart(violations: Dict[str, float], output_path: Path) -> None:
+    """Visualize constraint violations as a bar chart."""
+    if not violations:
+        return
+
+    labels = list(violations.keys())
+    values = [min(1.0, max(0.0, violations[label])) for label in labels]
+
+    fig, ax = plt.subplots(figsize=(max(6, len(labels) * 0.8), 4))
+    bars = ax.bar(labels, values, color='salmon', edgecolor='black')
+    ax.axhline(0.0, color='black', linewidth=0.8)
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Violation Rate")
+    ax.set_title("Constraint Violation Overview")
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    for bar, value in zip(bars, values):
+        ax.text(bar.get_x() + bar.get_width() / 2, value + 0.02, f"{value:.2f}", ha='center', va='bottom', fontsize=8)
+    ax.grid(axis='y', alpha=0.2)
+
+    plt.tight_layout()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
+
+
+def generate_visualization_suite(
+    real_df: pd.DataFrame,
+    synthetic_df: pd.DataFrame,
+    numerical_columns: List[str],
+    categorical_columns: List[str],
+    output_dir: Path,
+    file_stem: str,
+    constraint_details: Optional[List[Dict[str, Any]]] = None,
+    max_numerical: int = 6,
+    max_categorical: int = 6,
+) -> List[Path]:
+    """
+    Generate a collection of diagnostic plots for a synthetic dataset.
+
+    Returns a list of created file paths.
+    """
+    created: List[Path] = []
+    out_dir = Path(output_dir) / file_stem
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    num_cols = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns][:max_numerical]
+    cat_cols = [col for col in categorical_columns if col in real_df.columns and col in synthetic_df.columns][:max_categorical]
+
+    if num_cols or cat_cols:
+        dist_path = out_dir / "distributions.png"
+        create_distribution_plots(real_df, synthetic_df, num_cols, cat_cols, dist_path)
+        created.append(dist_path)
+
+    if num_cols:
+        qq_path = out_dir / "qq_plots.png"
+        create_qq_plots(real_df, synthetic_df, num_cols, qq_path)
+        created.append(qq_path)
+
+    if len(num_cols) > 1:
+        corr_path = out_dir / "correlations.png"
+        create_correlation_heatmaps(real_df, synthetic_df, num_cols, corr_path)
+        created.append(corr_path)
+
+    if constraint_details:
+        violations: Dict[str, float] = {}
+        for idx, detail in enumerate(constraint_details):
+            if detail.get("passed"):
+                continue
+            rule_id = detail.get("rule_id") or detail.get("type") or f"rule_{idx + 1}"
+            violations[str(rule_id)] = 1.0
+        if violations:
+            constraint_path = out_dir / "constraint_violations.png"
+            create_constraint_violation_chart(violations, constraint_path)
+            created.append(constraint_path)
+
+    return created
