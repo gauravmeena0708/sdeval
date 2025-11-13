@@ -26,7 +26,7 @@ dev = [
 ]
 
 [project.scripts]
-plausibility = "sdeval.cli:main"
+sdeval = "sdeval.cli:main"
 
 [build-system]
 requires = ["setuptools>=64", "wheel"]

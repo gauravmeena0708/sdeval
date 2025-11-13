@@ -7,14 +7,14 @@ from textwrap import dedent
 ROOT_HELP = dedent(
     """\
     Usage:
-      plausibility evaluate [options]
-      plausibility evaluate_bulk [options]
+      sdeval evaluate [options]
+      sdeval evaluate_bulk [options]
 
     Commands:
       evaluate         Run the standard sdeval evaluator (same flags as `python -m sdeval.main`).
       evaluate_bulk    Evaluate every CSV in a folder and produce Excel/visual summaries.
 
-    Use `plausibility <command> --help` to view command-specific options.
+    Use `sdeval <command> --help` to view command-specific options.
     """
 )
 

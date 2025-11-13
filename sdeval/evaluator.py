@@ -6,7 +6,7 @@ from typing import Dict, List
 from .config import EvaluatorSettings
 from .data_loader import detect_column_types, iter_synthetic_frames, load_real_data
 from .metrics import MetricContext, REGISTRY
-from .reporting import write_summary
+from .reporting import generate_html_report, write_summary
 from .visualization import generate_visualization_suite
 
 
@@ -99,12 +99,20 @@ class Evaluator:
             summary_path = write_summary(self.settings.output_dir, filename, metric_outputs)
             summary_paths.append(summary_path)
 
-            self._maybe_generate_visuals(
+            visuals = self._maybe_generate_visuals(
                 synthetic_df,
                 filename,
                 metric_outputs.get("constraints"),
                 metric_outputs.get("statistical"),
-            )
+            ) or []
+
+            if self.settings.html_report:
+                generate_html_report(
+                    self.settings.output_dir,
+                    filename,
+                    metric_outputs,
+                    visuals,
+                )
 
             if not self.settings.quiet and not self.settings.show_progress:
                 print(f"[INFO] Wrote metrics for {synthetic_path} -> {summary_path}")
@@ -117,9 +125,9 @@ class Evaluator:
         filename: str,
         constraints_metrics: Dict | None,
         statistical_metrics: Dict | None,
-    ) -> None:
+    ) -> List[Path] | None:
         if not self.settings.visualize:
-            return
+            return []
 
         constraint_details = None
         if constraints_metrics and constraints_metrics.get("constraints_enabled"):
@@ -138,3 +146,4 @@ class Evaluator:
         )
         if created and self.settings.verbose:
             print(f"   📉 Visualizations saved under {output_dir / filename}")
+        return created
