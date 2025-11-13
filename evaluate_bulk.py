@@ -50,6 +50,20 @@ VISUALIZATION_GROUPS = [
     ),
 ]
 
+RADAR_METRICS = {
+    "data_quality": [
+        ("statistical.alpha_precision", "Alpha Precision", "direct"),
+        ("statistical.beta_recall", "Beta Recall", "direct"),
+        ("coverage.unique_ratio", "Unique Ratio", "direct"),
+        ("coverage.rare_category_retention", "Rare Retention", "direct"),
+    ],
+    "privacy": [
+        ("privacy.knn_distance", "KNN Distance", "knn"),
+        ("privacy.dcr", "1 - DCR", "invert"),
+        ("privacy.nndr", "1 - NNDR", "invert"),
+    ],
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -330,11 +344,12 @@ def normalize_for_visual(raw_value: Any, mode: str, context: Dict[str, float]) -
 def generate_visualizations(rows: List[Dict[str, Any]], vis_dir: Path) -> List[Path]:
     try:
         import matplotlib.pyplot as plt  # type: ignore
+        import numpy as np  # type: ignore
     except ImportError as exc:
         raise SystemExit("matplotlib is required for visualization output.") from exc
 
     vis_dir.mkdir(parents=True, exist_ok=True)
-    cmap = plt.cm.get_cmap("RdYlGn")
+    cmap = plt.get_cmap("RdYlGn")
     max_knn = max(
         (float(row.get("privacy.knn_distance") or 0.0) for row in rows),
         default=0.0,
@@ -382,10 +397,34 @@ def generate_visualizations(rows: List[Dict[str, Any]], vis_dir: Path) -> List[P
         fig.tight_layout(rect=[0, 0, 1, 0.95])
         subdir = vis_dir / title
         subdir.mkdir(parents=True, exist_ok=True)
-        out_path = subdir / f"{title}_quality.png"
-        fig.savefig(out_path, dpi=200)
+        quality_path = subdir / f"{title}_quality.png"
+        fig.savefig(quality_path, dpi=200)
         plt.close(fig)
-        generated_paths.append(out_path)
+        generated_paths.append(quality_path)
+
+        for radar_type, metrics in RADAR_METRICS.items():
+            radar_labels = [label for _, label, _ in metrics]
+            radar_values = [normalize_for_visual(row.get(metric), mode, context) for metric, _, mode in metrics]
+            if not any(radar_values):
+                continue
+            angles = np.linspace(0, 2 * np.pi, len(radar_labels), endpoint=False)
+            angles = np.concatenate([angles, angles[:1]])
+            values = radar_values + radar_values[:1]
+            fig, ax = plt.subplots(subplot_kw={"projection": "polar"})
+            ax.plot(angles, values, color="#4c78a8", linewidth=2)
+            ax.fill(angles, values, color="#4c78a8", alpha=0.3)
+            ax.set_xticks(angles[:-1])
+            ax.set_xticklabels(radar_labels, fontsize=8)
+            ax.set_yticklabels([])
+            ax.set_ylim(0, 1)
+            pretty_name = "Data Quality" if radar_type == "data_quality" else "Privacy"
+            ax.set_title(f"{pretty_name} Radar: {title}", fontsize=12)
+            radar_path = subdir / f"{title}_{radar_type}.png"
+            fig.tight_layout()
+            fig.savefig(radar_path, dpi=200)
+            plt.close(fig)
+            generated_paths.append(radar_path)
+
     return generated_paths
 
 
