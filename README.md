@@ -49,24 +49,24 @@ pip install -e ".[dev]"
 
 ### Command-line evaluation
 
-Evaluate a single synthetic CSV against its real counterpart:
+After installing (`pip install -e .`), use the `plausibility` CLI:
 
 ```bash
-python -m sdeval.main \
+plausibility evaluate \
   --input-path synthetic/test.csv \
   --real-data-csv-path datasets/adult/train.csv \
   --output-dir outputs \
   --visualize
 ```
 
-This produces `outputs/test_summary.json` plus a console summary. Add `--visualize` to drop distribution, QQ, correlation, and constraint plots under `outputs/visualizations/<name>/`. Pass `--metrics` to limit which metric families run, `--configs config.json` to load defaults (including constraint rules), or `--compare` when you provide multiple `--input-path` files and want a CSV leaderboard.
+This produces `outputs/test_summary.json` plus a console summary. Add `--visualize` to drop distribution, QQ, correlation, constraint plots, and a statistical summary board under `outputs/visualizations/<name>/`. Pass `--metrics` to limit which metric families run, `--configs config.json` to load defaults (including constraint rules), or `--compare` when you provide multiple `--input-path` files and want a CSV leaderboard.
 
 ### Bulk evaluation & reporting
 
-Use `evaluate_bulk.py` to run the evaluator on every CSV in a directory and automatically collate the results:
+Use the CLI subcommand to evaluate an entire folder:
 
 ```bash
-python evaluate_bulk.py \
+plausibility evaluate_bulk \
   --synthetic-dir synthetic \
   --real-data-csv datasets/adult/train.csv \
   --output-dir outputs \

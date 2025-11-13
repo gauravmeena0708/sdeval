@@ -283,6 +283,7 @@ def generate_visualization_suite(
     output_dir: Path,
     file_stem: str,
     constraint_details: Optional[List[Dict[str, Any]]] = None,
+    stat_metrics: Optional[Dict[str, Any]] = None,
     max_numerical: int = 6,
     max_categorical: int = 6,
 ) -> List[Path]:
@@ -324,5 +325,41 @@ def generate_visualization_suite(
             constraint_path = out_dir / "constraint_violations.png"
             create_constraint_violation_chart(violations, constraint_path)
             created.append(constraint_path)
+
+    if stat_metrics:
+        summary_rows = [
+            ("Alpha Precision", stat_metrics.get("statistical_alpha_precision")),
+            ("Beta Recall", stat_metrics.get("statistical_beta_recall")),
+            ("Avg KS", stat_metrics.get("statistical_avg_ks")),
+            ("Avg chi-square", stat_metrics.get("statistical_avg_chi2")),
+            ("chi-square p", stat_metrics.get("statistical_avg_chi2_pvalue")),
+            ("Avg JSD", stat_metrics.get("statistical_avg_jsd")),
+            ("Corr Δ Fro", stat_metrics.get("statistical_corr_delta_fro")),
+            ("Corr Δ MeanAbs", stat_metrics.get("statistical_corr_delta_mean_abs")),
+        ]
+        fig, ax = plt.subplots(figsize=(6, max(2.5, 0.35 * len(summary_rows))))
+        ax.axis("off")
+        table_data = []
+        for label, value in summary_rows:
+            if value is None or (isinstance(value, float) and not np.isfinite(value)):
+                display = "-"
+            elif isinstance(value, float):
+                if abs(value) >= 1000:
+                    display = f"{value:.2e}"
+                else:
+                    display = f"{value:.4f}"
+            else:
+                display = str(value)
+            table_data.append([label, display])
+        table = ax.table(cellText=table_data, colLabels=["Metric", "Value"], loc="center")
+        table.auto_set_font_size(False)
+        table.set_fontsize(9)
+        table.scale(1, 1.2)
+        ax.set_title("Statistical Summary", fontsize=12, pad=12)
+        summary_path = out_dir / "statistical_summary.png"
+        fig.tight_layout()
+        fig.savefig(summary_path, dpi=180)
+        plt.close(fig)
+        created.append(summary_path)
 
     return created

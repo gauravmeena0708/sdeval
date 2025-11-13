@@ -196,68 +196,14 @@ These are potential improvements for future versions. Current version is product
 
 ---
 
-### Phase 14: Advanced Visualization ✅ (PARTIAL COMPLETION)
+### Phase 14: Advanced Visualization (Remaining)
 
-**Status:** ✅ Core diagnostics shipped in v1.3.0  
-Remaining items track future polish.
+- [ ] Interactive/HTML dashboards
+  - [ ] Plotly/Streamlit drill-downs
+  - [ ] One-click HTML report bundling all metrics/plots
 
-- [x] QQ plots
-  - [x] Quantile-quantile comparison
-  - [x] Per numerical column
-- [x] Correlation heatmaps
-  - [x] Real vs synthetic correlation matrices
-  - [x] Side-by-side comparison
-- [x] Constraint violation charts
-  - [x] Bar chart of pass/fail
-  - [x] Severity indicators
-- [x] KPI dashboards
-  - [x] Data-quality & privacy radar plots (bulk mode)
-- [ ] Interactive plots
-  - [ ] Plotly integration
-  - [ ] Drill-down capability
-- [ ] Dashboard
-  - [ ] HTML report generation
-
-**Priority:** Medium
+**Priority:** Medium  
 **Estimated Effort:** 2-3 weeks
-
----
-
-### Phase 15: CLI Interface ✅ (COMPLETED)
-
-**Status:** ✅ Implemented in v1.2.0
-
-- [x] Main CLI entry point
-  - [x] `python -m sdeval.main --real-data-csv-path train.csv --input-path test.csv --output-dir outputs`
-- [x] Output directory management
-  - [x] Auto-create directories
-  - [x] Timestamped runs with `--timestamp` flag
-  - [x] Overwrite protection with `--overwrite` flag
-- [x] Metric selection
-  - [x] `--metrics statistical coverage`
-  - [x] Skip expensive metrics
-- [x] Verbose mode
-  - [x] Progress bars with tqdm
-  - [x] Detailed logging with `--verbose` flag
-  - [x] Per-metric status reporting
-- [x] Batch mode
-  - [x] Evaluate multiple synthetic files from directory
-  - [x] Comparison tables with `--compare` flag
-  - [x] Automatic CSV generation
-- [x] Quiet mode
-  - [x] `--quiet` flag for minimal output
-  - [x] Error-only logging
-- [x] Enhanced help
-  - [x] Example commands in `--help`
-  - [x] Clear option descriptions
-
-**Current Implementation:**
-- `sdeval/main.py` - Enhanced CLI with all features
-- `sdeval/evaluator.py` - Progress bar integration
-- `sdeval/config.py` - Verbosity settings
-- Supports `-v`/`--verbose`, `-q`/`--quiet`, `-t`/`--timestamp`, `-c`/`--compare` flags
-
----
 
 ### Phase 16: Additional Features (Future)
 
@@ -323,15 +269,18 @@ Remaining items track future polish.
 
 ## 🎯 Recommended Next Steps
 
-For most users, the current version (1.0.0) is sufficient. Consider enhancements only if:
+1. **Advanced Statistical & Coverage Metrics (Phases 8 & 9)**  
+   - Add KS/Chi-square per-column reporting, mutual information preservation, pairwise/triwise contingency tests, and frequency-rank correlation.
+2. **Advanced Privacy Metrics (Phase 10)**  
+   - Implement k-anonymity, membership/attribute-inference attacks, and richer DCR analyses.
+3. **Performance Improvements (Phase 13)**  
+   - Parallel metric execution, smart sampling, streaming CSV reads, caching.
+4. **Interactive Visualizations (Phase 14 remaining)**  
+   - Generate Plotly/HTML dashboards combining metrics, plots, and drill-down tables.
+5. **Research Features (Phase 16)**  
+   - Fairness, differential privacy verification hooks, and optional causality metrics for specialized users.
 
-1. **Need ML Utility?** → Implement Phase 11 (requires target column)
-2. **Need Constraints?** → Implement Phase 12 (requires config file)
-3. **Performance Issues?** → Implement Phase 13 (parallel execution)
-4. **Want CLI?** → Implement Phase 15 (convenience feature)
-5. **Need k-anonymity?** → Implement Phase 10 (requires config)
-
-**Default Recommendation:** Use current version as-is for 95% of use cases.
+The current version (1.3.0) is production-ready; pursue the items above based on project priorities.
 
 ---
 
@@ -359,6 +308,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-**Current Status: Production Ready with Enhanced CLI ✅**
-**Last Updated:** January 13, 2025
-**Version:** 1.2.0
+**Current Status: Production Ready with Visual Diagnostics & CLI ✅**
+**Last Updated:** January 16, 2025
+**Version:** 1.3.0
