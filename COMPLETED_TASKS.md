@@ -202,6 +202,45 @@ This document archives all completed tasks from the implementation checklist.
 
 ---
 
+## Phase 14: Visualization Enhancements ✅
+
+**Date Completed:** January 16, 2025
+
+**Highlights:**
+- Added comprehensive diagnostics in `sdeval/visualization.py`, including:
+  - Multi-column distribution overlays (numerical density + categorical bars)
+  - QQ plots for numeric drift checks
+  - Correlation heatmaps (real vs synthetic) with deviation summaries
+  - Constraint violation bar charts
+  - Statistical summary boards with alpha/beta, KS, chi-square, JSD, and correlation delta metrics
+- Introduced radar dashboards (data-quality vs privacy) and advanced KPI bars in the bulk pipeline.
+- Every `--visualize` run now writes per-file PNGs under `outputs/visualizations/<name>/` for fast inspection.
+
+**Artifacts:**
+- `sdeval/visualization.py`
+- `sdeval/evaluator.py` (visualization hooks)
+- `sdeval/evaluate_bulk.py` (data-quality & privacy dashboards)
+
+---
+
+## Phase 15: CLI & Bulk Runner ✅
+
+**Date Completed:** January 16, 2025
+
+**Highlights:**
+- Added the `plausibility` console entry point so `pip install -e .` exposes:
+  - `plausibility evaluate …` (wrapper around `python -m sdeval.main`)
+  - `plausibility evaluate_bulk …` for folder-wide runs with Excel + PNG outputs
+- Bulk CLI now shells out to the evaluator, aggregates summaries, writes color-coded Excel, and drops radar dashboards automatically.
+- README updated with the new commands; help text documents every flag.
+
+**Artifacts:**
+- `sdeval/cli.py`
+- `sdeval/evaluate_bulk.py`
+- `pyproject.toml` entry points
+
+---
+
 ## Documentation ✅
 
 **Completed Tasks:**
