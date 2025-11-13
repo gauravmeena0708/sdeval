@@ -16,6 +16,7 @@ dependencies = [
     "matplotlib",
     "seaborn",
     "torch",
+    "transformers",
 ]
 
 [project.optional-dependencies]
