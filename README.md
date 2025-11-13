@@ -262,6 +262,22 @@ print(f"Results saved to {output_dir}")
 - Measures overall distributional similarity for numerical columns
 - Lower values indicate distributions are more similar
 
+**6. Kolmogorov–Smirnov Statistic** (0.0 - 1.0, lower is better)
+- Average two-sample KS statistic across numeric columns
+- Captures cumulative distribution shifts even when means/stdevs align
+
+**7. Chi-square Fit & P-value** (lower statistic / higher p-value better)
+- Chi-square goodness-of-fit test for categorical frequencies
+- Highlights categories where synthetic proportions diverge
+
+**8. Jensen–Shannon Divergence** (0.0 - 1.0, lower is better)
+- Histogram-based JS divergence across numeric columns
+- Symmetric/bounded complement to Wasserstein distance
+
+**9. Correlation Delta (Frobenius & Mean Abs)** (lower is better)
+- Measures deviation between real vs synthetic correlation matrices
+- Ensures pairwise relationships (e.g., education vs income) are preserved
+
 ### Coverage & Diversity Metrics
 
 **1. Uniqueness Ratio** (0.0 - 1.0, higher is better)

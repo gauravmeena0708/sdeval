@@ -2,9 +2,9 @@
 
 ## 🎯 Current Status
 
-**Version:** 1.2.0 (CLI Enhanced)
-**Date:** January 13, 2025
-**Status:** ✅ Production Ready with Enhanced CLI
+**Version:** 1.3.0 (Visualization & Bulk Automation)
+**Date:** January 16, 2025
+**Status:** ✅ Production Ready with Bulk tooling & diagnostics
 
 ### What's Working
 
@@ -18,19 +18,21 @@
 ✅ **Infrastructure**
 - Automatic column type detection
 - CSV data loading
-- Distribution visualization
 - JSON output generation
-- **Progress bars with tqdm** (NEW!)
-- **Timestamped output directories** (NEW!)
-- **Batch evaluation with comparison tables** (NEW!)
+- **Distribution, QQ, correlation, constraint plots via `--visualize`** (NEW!)
+- **Progress bars with tqdm**
+- **Timestamped output directories**
+- **Batch evaluation with comparison tables**
 
-✅ **Enhanced CLI** (NEW!)
+✅ **Enhanced CLI & Bulk Runner** (UPDATED!)
 - Verbose/quiet modes
 - Progress indicators
-- Batch processing
+- Batch processing (`python -m sdeval.main`, `evaluate_bulk.py`)
 - Comparison table generation
 - Improved error messages
 - Example commands in help
+- **Optional visualization flag (`--visualize`)**
+- **Radar dashboards (data-quality & privacy) + Excel summaries in bulk mode** (NEW!)
 
 ✅ **Quality Assurance**
 - 80 comprehensive tests (updated from 61)
@@ -44,7 +46,7 @@
 - Working demo scripts
 - API documentation
 - Metric explanations
-- **Updated with standardized naming** (NEW!)
+- **Updated Quick Start for CLI/bulk visualization** (NEW!)
 
 ### Quick Links
 
@@ -194,23 +196,27 @@ These are potential improvements for future versions. Current version is product
 
 ---
 
-### Phase 14: Advanced Visualization (Future)
+### Phase 14: Advanced Visualization ✅ (PARTIAL COMPLETION)
 
-- [ ] QQ plots
-  - [ ] Quantile-quantile comparison
-  - [ ] Per numerical column
-- [ ] Correlation heatmaps
-  - [ ] Real vs synthetic correlation matrices
-  - [ ] Side-by-side comparison
+**Status:** ✅ Core diagnostics shipped in v1.3.0  
+Remaining items track future polish.
+
+- [x] QQ plots
+  - [x] Quantile-quantile comparison
+  - [x] Per numerical column
+- [x] Correlation heatmaps
+  - [x] Real vs synthetic correlation matrices
+  - [x] Side-by-side comparison
+- [x] Constraint violation charts
+  - [x] Bar chart of pass/fail
+  - [x] Severity indicators
+- [x] KPI dashboards
+  - [x] Data-quality & privacy radar plots (bulk mode)
 - [ ] Interactive plots
   - [ ] Plotly integration
   - [ ] Drill-down capability
-- [ ] Constraint violation charts
-  - [ ] Bar chart of pass/fail
-  - [ ] Severity indicators
 - [ ] Dashboard
   - [ ] HTML report generation
-  - [ ] All metrics in one view
 
 **Priority:** Medium
 **Estimated Effort:** 2-3 weeks
