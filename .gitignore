@@ -2,3 +2,4 @@ submodules/*
 old_code/*
 *.pyc
 outputs/*
+synthetic/*

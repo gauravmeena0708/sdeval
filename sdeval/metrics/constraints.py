@@ -2,12 +2,141 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 
 from . import MetricContext, register_metric
+
+
+# ============================================================================
+# Simple Constraint Satisfaction Rate (for categorical constraints)
+# ============================================================================
+
+def parse_constraint(constraint: Optional[str]) -> List[Tuple[str, str]]:
+    """
+    Parse a simple categorical constraint string into list of (column, value) tuples.
+
+    Supports:
+    - Single constraint: "education=11th"
+    - Multiple constraints: "workclass=State-gov,education=Bachelors"
+
+    Args:
+        constraint: Constraint string (e.g., "education=11th" or "col1=val1,col2=val2")
+
+    Returns:
+        List of (column, value) tuples
+
+    Examples:
+        >>> parse_constraint("education=11th")
+        [('education', '11th')]
+        >>> parse_constraint("workclass=State-gov,education=Bachelors")
+        [('workclass', 'State-gov'), ('education', 'Bachelors')]
+    """
+    if not constraint:
+        return []
+
+    parsed = []
+    # Split by comma for multiple constraints
+    parts = constraint.split(',')
+    for part in parts:
+        part = part.strip()
+        if '=' not in part:
+            continue
+        # Split by = for column=value
+        column, value = part.split('=', 1)
+        column = column.strip()
+        value = value.strip()
+        parsed.append((column, value))
+
+    return parsed
+
+
+def compute_constraint_satisfaction_rate(df: pd.DataFrame, constraint: str) -> float:
+    """
+    Compute the proportion of samples satisfying a categorical constraint.
+
+    Args:
+        df: DataFrame to evaluate
+        constraint: Constraint string (e.g., "education=11th" or "col1=val1,col2=val2")
+
+    Returns:
+        Float between 0 and 1 representing the satisfaction rate
+
+    Examples:
+        >>> df = pd.DataFrame({'education': ['11th', 'Bachelors', '11th']})
+        >>> compute_constraint_satisfaction_rate(df, "education=11th")
+        0.6666666666666666
+    """
+    if df.empty:
+        return 0.0
+
+    # Parse the constraint
+    constraints = parse_constraint(constraint)
+
+    # Empty constraint means all rows satisfy (vacuous truth)
+    if not constraints:
+        return 1.0
+
+    # Start with all rows as True
+    mask = pd.Series([True] * len(df), index=df.index)
+
+    # Apply each constraint with AND logic
+    for column, value in constraints:
+        if column not in df.columns:
+            raise KeyError(f"Column '{column}' not found in DataFrame. Available columns: {list(df.columns)}")
+
+        # Convert to string and strip whitespace for comparison
+        # This handles datasets with leading/trailing spaces
+        mask &= (df[column].astype(str).str.strip() == value)
+
+    # Calculate satisfaction rate
+    satisfaction_rate = mask.sum() / len(df)
+    return float(satisfaction_rate)
+
+
+def compute_constraint_support(
+    real_df: pd.DataFrame,
+    synthetic_df: pd.DataFrame,
+    constraint: str
+) -> Dict[str, float]:
+    """
+    Compute constraint satisfaction/support metrics for both real and synthetic data.
+
+    Args:
+        real_df: Real data DataFrame
+        synthetic_df: Synthetic data DataFrame
+        constraint: Constraint string (e.g., "education=11th")
+
+    Returns:
+        Dictionary with:
+        - real_satisfaction_rate: Satisfaction rate in real data
+        - synthetic_satisfaction_rate: Satisfaction rate in synthetic data
+        - satisfaction_rate_diff: Absolute difference between rates
+
+    Examples:
+        >>> real = pd.DataFrame({'education': ['11th', 'Bachelors', '11th']})
+        >>> synth = pd.DataFrame({'education': ['11th', '11th', 'Masters']})
+        >>> metrics = compute_constraint_support(real, synth, "education=11th")
+        >>> metrics['real_satisfaction_rate']
+        0.6666666666666666
+        >>> metrics['synthetic_satisfaction_rate']
+        0.6666666666666666
+    """
+    real_rate = compute_constraint_satisfaction_rate(real_df, constraint)
+    synthetic_rate = compute_constraint_satisfaction_rate(synthetic_df, constraint)
+
+    return {
+        'real_satisfaction_rate': real_rate,
+        'synthetic_satisfaction_rate': synthetic_rate,
+        'satisfaction_rate_diff': abs(real_rate - synthetic_rate)
+    }
+
+
+# ============================================================================
+# Original Complex Constraint Validation (requires configuration)
+# ============================================================================
 
 
 def _build_value_lookup(real_df: pd.DataFrame) -> Dict[tuple, Any]:

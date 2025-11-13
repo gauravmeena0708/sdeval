@@ -7,14 +7,16 @@ A comprehensive toolkit for evaluating synthetic tabular datasets against real t
 
 ## 🎯 Features
 
-- **12 Evaluation Metrics** across 3 categories:
+- **12+ Evaluation Metrics** across 4 categories:
   - Statistical Fidelity (5 metrics)
   - Coverage & Diversity (4 metrics)
   - Privacy Analysis (3 metrics)
+  - Constraint Satisfaction (new!)
 - **Automatic column type detection** (numerical/categorical)
 - **Visualization tools** for distribution comparisons
+- **Constraint satisfaction rate** - measure how well synthetic data preserves categorical constraints
 - **No configuration required** - just point to your CSV files
-- **Comprehensive test suite** (61 tests)
+- **Comprehensive test suite** (80 tests)
 - **Production-ready** with full test coverage
 
 ## 📦 Installation
@@ -264,6 +266,102 @@ print(f"Results saved to {output_dir}")
 - Larger distances indicate better privacy
 - Measured in standardized feature space
 - Example: Higher values mean synthetic is distinct from real data
+
+
+### Constraint Satisfaction Metrics (NEW!)
+
+The constraint satisfaction module allows you to measure how well synthetic data preserves categorical constraints from the real data.
+
+**Use Case**: When you generate synthetic data with specific constraints (e.g., "generate samples where education=Bachelors" or "workclass=State-gov,education=Bachelors"), you want to verify that the constraint is satisfied at the expected rate.
+
+#### Basic Usage
+
+```python
+from sdeval.metrics.constraints import (
+    compute_constraint_satisfaction_rate,
+    compute_constraint_support
+)
+
+# Single constraint - measure satisfaction rate in one dataset
+real_rate = compute_constraint_satisfaction_rate(real_df, "education=Bachelors")
+print(f"Real data: {real_rate:.2%} samples have education=Bachelors")
+
+# Compare real vs synthetic
+metrics = compute_constraint_support(real_df, synthetic_df, "education=Bachelors")
+print(f"Real satisfaction rate: {metrics['real_satisfaction_rate']:.2%}")
+print(f"Synthetic satisfaction rate: {metrics['synthetic_satisfaction_rate']:.2%}")
+print(f"Absolute difference: {metrics['satisfaction_rate_diff']:.4f}")
+```
+
+#### Multiple Constraints
+
+Constraints can be combined with comma separation (AND logic):
+
+```python
+# Multiple constraints - both must be satisfied
+constraint = "workclass=State-gov,education=Bachelors"
+metrics = compute_constraint_support(real_df, synthetic_df, constraint)
+
+# This measures: what % of samples have BOTH workclass=State-gov AND education=Bachelors
+```
+
+#### Complete Example
+
+```python
+from pathlib import Path
+from sdeval.data_loader import load_csv
+from sdeval.metrics.constraints import compute_constraint_support
+
+# Load data
+real_df = load_csv(Path("datasets/adult/train.csv"))
+synthetic_df = load_csv(Path("datasets/adult/test.csv"))
+
+# Example 1: Single constraint
+constraint1 = "education=11th"
+result1 = compute_constraint_support(real_df, synthetic_df, constraint1)
+print(f"Constraint: {constraint1}")
+print(f"  Real: {result1['real_satisfaction_rate']:.2%}")
+print(f"  Synthetic: {result1['synthetic_satisfaction_rate']:.2%}")
+print(f"  Difference: {result1['satisfaction_rate_diff']:.4f}")
+
+# Example 2: Multiple constraints
+constraint2 = "workclass=State-gov,education=Bachelors"
+result2 = compute_constraint_support(real_df, synthetic_df, constraint2)
+print(f"\nConstraint: {constraint2}")
+print(f"  Real: {result2['real_satisfaction_rate']:.2%}")
+print(f"  Synthetic: {result2['synthetic_satisfaction_rate']:.2%}")
+print(f"  Difference: {result2['satisfaction_rate_diff']:.4f}")
+
+# Example 3: Batch evaluation across multiple values
+workclass_values = ['State-gov', 'Private', 'Federal-gov', 'Local-gov']
+for wc in workclass_values:
+    result = compute_constraint_support(real_df, synthetic_df, f"workclass={wc}")
+    print(f"{wc:20s} Real: {result['real_satisfaction_rate']:6.2%}  "
+          f"Synth: {result['synthetic_satisfaction_rate']:6.2%}  "
+          f"Diff: {result['satisfaction_rate_diff']:6.4f}")
+```
+
+#### Output Metrics
+
+`compute_constraint_support()` returns a dictionary with:
+- **real_satisfaction_rate**: Fraction of real samples satisfying the constraint (0.0 - 1.0)
+- **synthetic_satisfaction_rate**: Fraction of synthetic samples satisfying the constraint (0.0 - 1.0)
+- **satisfaction_rate_diff**: Absolute difference between the two rates
+
+**Interpretation**:
+- **Low difference** (< 0.05): Synthetic data preserves the constraint distribution well
+- **Medium difference** (0.05 - 0.15): Synthetic data has noticeable deviation
+- **High difference** (> 0.15): Synthetic data does not preserve the constraint well
+
+#### Notes
+
+- Constraint values are automatically trimmed (whitespace removed) for robustness
+- Empty constraint string returns 1.0 (all samples satisfy vacuous truth)
+- Multiple constraints use AND logic (all must be satisfied)
+- Best used for categorical columns; numerical constraints not supported yet
+
+See `example_constraint_evaluation.py` for a complete working example.
+
 
 ## 🎨 Visualization
 
