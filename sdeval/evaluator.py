@@ -99,14 +99,25 @@ class Evaluator:
             summary_path = write_summary(self.settings.output_dir, filename, metric_outputs)
             summary_paths.append(summary_path)
 
-            self._maybe_generate_visuals(synthetic_df, filename, metric_outputs.get("constraints"))
+            self._maybe_generate_visuals(
+                synthetic_df,
+                filename,
+                metric_outputs.get("constraints"),
+                metric_outputs.get("statistical"),
+            )
 
             if not self.settings.quiet and not self.settings.show_progress:
                 print(f"[INFO] Wrote metrics for {synthetic_path} -> {summary_path}")
 
         return summary_paths
 
-    def _maybe_generate_visuals(self, synthetic_df, filename: str, constraints_metrics: Dict | None) -> None:
+    def _maybe_generate_visuals(
+        self,
+        synthetic_df,
+        filename: str,
+        constraints_metrics: Dict | None,
+        statistical_metrics: Dict | None,
+    ) -> None:
         if not self.settings.visualize:
             return
 
@@ -123,6 +134,7 @@ class Evaluator:
             output_dir,
             filename,
             constraint_details=constraint_details,
+            stat_metrics=statistical_metrics,
         )
         if created and self.settings.verbose:
             print(f"   📉 Visualizations saved under {output_dir / filename}")

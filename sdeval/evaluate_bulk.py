@@ -41,6 +41,14 @@ VISUALIZATION_GROUPS = [
         ],
     ),
     (
+        "Advanced Stats",
+        [
+            ("statistical.avg_jsd", "1 - JSD", "invert"),
+            ("statistical.avg_ks", "1 - KS", "invert"),
+            ("statistical.corr_delta_mean_abs", "1 - CorrΔ", "corr"),
+        ],
+    ),
+    (
         "Privacy",
         [
             ("privacy.dcr", "1 - DCR", "invert"),
@@ -56,6 +64,9 @@ RADAR_METRICS = {
         ("statistical.beta_recall", "Beta Recall", "direct"),
         ("coverage.unique_ratio", "Unique Ratio", "direct"),
         ("coverage.rare_category_retention", "Rare Retention", "direct"),
+        ("statistical.avg_jsd", "1 - JSD", "invert"),
+        ("statistical.avg_ks", "1 - KS", "invert"),
+        ("statistical.corr_delta_mean_abs", "1 - CorrΔ", "corr"),
     ],
     "privacy": [
         ("privacy.knn_distance", "KNN Distance", "knn"),
@@ -65,7 +76,7 @@ RADAR_METRICS = {
 }
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--synthetic-dir",
@@ -117,7 +128,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Enable visual outputs (dashboards plus per-file diagnostics).",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def find_synthetic_csvs(directory: Path, pattern: str) -> List[Path]:
@@ -338,6 +349,9 @@ def normalize_for_visual(raw_value: Any, mode: str, context: Dict[str, float]) -
     if mode == "knn":
         max_knn = context.get("max_knn_distance", 1.0) or 1.0
         return clamp01(value / max_knn)
+    if mode == "corr":
+        max_corr = context.get("max_corr_delta", 1.0) or 1.0
+        return clamp01(1.0 - value / max_corr)
     return 0.0
 
 
@@ -354,7 +368,14 @@ def generate_visualizations(rows: List[Dict[str, Any]], vis_dir: Path) -> List[P
         (float(row.get("privacy.knn_distance") or 0.0) for row in rows),
         default=0.0,
     )
-    context = {"max_knn_distance": max_knn if max_knn > 0 else 1.0}
+    max_corr_delta = max(
+        (float(row.get("statistical.corr_delta_mean_abs") or 0.0) for row in rows),
+        default=0.0,
+    )
+    context = {
+        "max_knn_distance": max_knn if max_knn > 0 else 1.0,
+        "max_corr_delta": max_corr_delta if max_corr_delta > 0 else 1.0,
+    }
 
     generated_paths: List[Path] = []
     for row in rows:
@@ -428,8 +449,8 @@ def generate_visualizations(rows: List[Dict[str, Any]], vis_dir: Path) -> List[P
     return generated_paths
 
 
-def main() -> None:
-    args = parse_args()
+def main(argv: Sequence[str] | None = None) -> None:
+    args = parse_args(argv)
     synthetic_dir = Path(args.synthetic_dir)
     if not synthetic_dir.exists():
         raise SystemExit(f"Synthetic directory not found: {synthetic_dir}")
