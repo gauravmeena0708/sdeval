@@ -27,6 +27,10 @@ class EvaluatorSettings:
     raw_config: Dict[str, Any] = field(default_factory=dict)
     constraints: Dict[str, Any] = field(default_factory=dict)
     metrics: List[str] = field(default_factory=list)
+    verbose: bool = False
+    quiet: bool = False
+    show_progress: bool = True
+    visualize: bool = False
 
     def ensure_output_dir(self) -> None:
         path = Path(self.output_dir)
@@ -74,6 +78,7 @@ def load_settings_from_args(args) -> EvaluatorSettings:
         raw_config=config_dict,
         constraints=constraints_dict,
         metrics=metrics,
+        visualize=args.visualize,
     )
 
     if not settings.real_data_path:

@@ -242,7 +242,7 @@ def compute_plausibility_metric(ctx: MetricContext) -> dict:
     train_if_missing = cfg.get("train_if_missing", False)
     train_epochs = cfg.get("train_epochs", 50)
     return compute_plausibility_for_paths(
-        ctx.settings.training_data_path,
+        ctx.settings.real_data_path,
         ctx.synthetic_path,
         train_if_missing=train_if_missing,
         train_epochs=train_epochs,

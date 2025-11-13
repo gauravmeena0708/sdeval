@@ -4,12 +4,14 @@ Visualization module for generating real vs synthetic comparison plots.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 
 def create_distribution_plots(
@@ -182,7 +184,7 @@ def create_qq_plots(
     real_df: pd.DataFrame,
     synthetic_df: pd.DataFrame,
     numerical_columns: List[str],
-    output_path: Path,
+    output_path: Path
 ) -> None:
     """Create QQ plots comparing distributions of numerical columns."""
     columns = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns]
@@ -227,7 +229,7 @@ def create_correlation_heatmaps(
     real_df: pd.DataFrame,
     synthetic_df: pd.DataFrame,
     numerical_columns: List[str],
-    output_path: Path,
+    output_path: Path
 ) -> None:
     """Create side-by-side correlation heatmaps for real vs synthetic data."""
     columns = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns]
@@ -250,14 +252,19 @@ def create_correlation_heatmaps(
 
 
 def create_constraint_violation_chart(violations: Dict[str, float], output_path: Path) -> None:
-    """Visualize constraint violations as a bar chart."""
+    """
+    Visualize constraint violations as a bar chart.
+
+    Args:
+        violations: Mapping from rule name to violation rate (0-1).
+    """
     if not violations:
         return
 
     labels = list(violations.keys())
     values = [min(1.0, max(0.0, violations[label])) for label in labels]
 
-    fig, ax = plt.subplots(figsize=(max(6, len(labels) * 0.8), 4))
+    fig, ax = plt.subplots(figsize=(8, 4))
     bars = ax.bar(labels, values, color='salmon', edgecolor='black')
     ax.axhline(0.0, color='black', linewidth=0.8)
     ax.set_ylim(0, 1)
@@ -275,54 +282,72 @@ def create_constraint_violation_chart(violations: Dict[str, float], output_path:
     plt.close()
 
 
-def generate_visualization_suite(
+def create_interactive_dashboard(
     real_df: pd.DataFrame,
     synthetic_df: pd.DataFrame,
     numerical_columns: List[str],
     categorical_columns: List[str],
-    output_dir: Path,
-    file_stem: str,
-    constraint_details: Optional[List[Dict[str, Any]]] = None,
-    max_numerical: int = 6,
-    max_categorical: int = 6,
-) -> List[Path]:
-    """
-    Generate a collection of diagnostic plots for a synthetic dataset.
+    output_path: Path
+) -> None:
+    """Create an interactive Plotly dashboard combining multiple comparisons."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = make_subplots(rows=2, cols=2, subplot_titles=("Distribution Comparison", "Box Plots",
+                                                        "Categorical Frequencies", "Numerical Scatter"))
 
-    Returns a list of created file paths.
-    """
-    created: List[Path] = []
-    out_dir = Path(output_dir) / file_stem
-    out_dir.mkdir(parents=True, exist_ok=True)
+    if numerical_columns:
+        col = numerical_columns[0]
+        real_vals = pd.to_numeric(real_df[col], errors='coerce').dropna()
+        syn_vals = pd.to_numeric(synthetic_df[col], errors='coerce').dropna()
+        fig.add_trace(go.Histogram(x=real_vals, name=f"Real {col}", opacity=0.6), row=1, col=1)
+        fig.add_trace(go.Histogram(x=syn_vals, name=f"Synthetic {col}", opacity=0.6), row=1, col=1)
+        fig.update_xaxes(title_text=col, row=1, col=1)
+        fig.update_yaxes(title_text="Count", row=1, col=1)
 
-    num_cols = [col for col in numerical_columns if col in real_df.columns and col in synthetic_df.columns][:max_numerical]
-    cat_cols = [col for col in categorical_columns if col in real_df.columns and col in synthetic_df.columns][:max_categorical]
+    if len(numerical_columns) > 1:
+        col = numerical_columns[1]
+        fig.add_trace(go.Box(y=pd.to_numeric(real_df[col], errors='coerce').dropna(), name=f"Real {col}"),
+                      row=1, col=2)
+        fig.add_trace(go.Box(y=pd.to_numeric(synthetic_df[col], errors='coerce').dropna(), name=f"Synth {col}"),
+                      row=1, col=2)
 
-    if num_cols or cat_cols:
-        dist_path = out_dir / "distributions.png"
-        create_distribution_plots(real_df, synthetic_df, num_cols, cat_cols, dist_path)
-        created.append(dist_path)
+    if categorical_columns:
+        cat = categorical_columns[0]
+        real_counts = real_df[cat].value_counts().head(15)
+        syn_counts = synthetic_df[cat].value_counts().head(15)
+        categories = list(real_counts.index.union(syn_counts.index))
+        fig.add_trace(go.Bar(x=categories, y=[real_counts.get(c, 0) for c in categories], name="Real"),
+                      row=2, col=1)
+        fig.add_trace(go.Bar(x=categories, y=[syn_counts.get(c, 0) for c in categories], name="Synthetic"),
+                      row=2, col=1)
+        fig.update_xaxes(title_text=cat, row=2, col=1)
+        fig.update_yaxes(title_text="Frequency", row=2, col=1)
 
-    if num_cols:
-        qq_path = out_dir / "qq_plots.png"
-        create_qq_plots(real_df, synthetic_df, num_cols, qq_path)
-        created.append(qq_path)
+    if len(numerical_columns) >= 2:
+        x_col, y_col = numerical_columns[0], numerical_columns[1]
+        fig.add_trace(
+            go.Scatter(
+                x=pd.to_numeric(real_df[x_col], errors='coerce'),
+                y=pd.to_numeric(real_df[y_col], errors='coerce'),
+                mode='markers',
+                name=f"Real {x_col}/{y_col}",
+                marker=dict(size=4, opacity=0.5, color='steelblue'),
+            ),
+            row=2,
+            col=2,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=pd.to_numeric(synthetic_df[x_col], errors='coerce'),
+                y=pd.to_numeric(synthetic_df[y_col], errors='coerce'),
+                mode='markers',
+                name=f"Synth {x_col}/{y_col}",
+                marker=dict(size=4, opacity=0.5, color='orange'),
+            ),
+            row=2,
+            col=2,
+        )
+        fig.update_xaxes(title_text=x_col, row=2, col=2)
+        fig.update_yaxes(title_text=y_col, row=2, col=2)
 
-    if len(num_cols) > 1:
-        corr_path = out_dir / "correlations.png"
-        create_correlation_heatmaps(real_df, synthetic_df, num_cols, corr_path)
-        created.append(corr_path)
-
-    if constraint_details:
-        violations: Dict[str, float] = {}
-        for idx, detail in enumerate(constraint_details):
-            if detail.get("passed"):
-                continue
-            rule_id = detail.get("rule_id") or detail.get("type") or f"rule_{idx + 1}"
-            violations[str(rule_id)] = 1.0
-        if violations:
-            constraint_path = out_dir / "constraint_violations.png"
-            create_constraint_violation_chart(violations, constraint_path)
-            created.append(constraint_path)
-
-    return created
+    fig.update_layout(barmode='group', template='plotly_white', height=800, showlegend=True)
+    fig.write_html(str(output_path), include_plotlyjs='cdn', full_html=True)

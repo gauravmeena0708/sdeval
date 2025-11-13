@@ -17,6 +17,7 @@ dependencies = [
     "seaborn",
     "torch",
     "transformers",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
