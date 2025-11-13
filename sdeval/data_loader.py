@@ -25,20 +25,20 @@ def load_csv(path: Path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-def detect_column_types(df: pd.DataFrame) -> Dict[str, List[str]]:
+def detect_column_types(real_df: pd.DataFrame) -> Dict[str, List[str]]:
     """
     Automatically detect numerical and categorical columns in a DataFrame.
 
     Args:
-        df: Input DataFrame
+        real_df: Input DataFrame
 
     Returns:
         Dictionary with keys:
             - 'numerical_columns': List of numerical column names
             - 'categorical_columns': List of categorical column names
     """
-    numerical_columns = df.select_dtypes(include=['int64', 'float64', 'int32', 'float32']).columns.tolist()
-    categorical_columns = df.select_dtypes(include=['object', 'category', 'bool']).columns.tolist()
+    numerical_columns = real_df.select_dtypes(include=['int64', 'float64', 'int32', 'float32']).columns.tolist()
+    categorical_columns = real_df.select_dtypes(include=['object', 'category', 'bool']).columns.tolist()
 
     return {
         'numerical_columns': numerical_columns,
@@ -47,7 +47,7 @@ def detect_column_types(df: pd.DataFrame) -> Dict[str, List[str]]:
 
 
 def load_real_data(path: str) -> pd.DataFrame:
-    """Load the reference (real) dataset."""
+    """Load the real dataset for evaluation."""
     if not os.path.exists(path):
         raise FileNotFoundError(f"Real data CSV not found: {path}")
     return pd.read_csv(path)

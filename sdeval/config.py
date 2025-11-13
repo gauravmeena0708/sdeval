@@ -19,7 +19,7 @@ class EvaluatorSettings:
     """Runtime settings derived from CLI arguments and optional config files."""
 
     input_path: str
-    training_data_path: str
+    real_data_path: str
     output_dir: str
     model_path: Optional[str] = None
     overwrite: bool = False
@@ -66,7 +66,7 @@ def load_settings_from_args(args) -> EvaluatorSettings:
 
     settings = EvaluatorSettings(
         input_path=args.input_path,
-        training_data_path=args.training_data_csv_path or config_dict.get("training_data_csv_path"),
+        real_data_path=args.real_data_csv_path or config_dict.get("real_data_csv_path"),
         output_dir=output_dir,
         model_path=args.model_path or config_dict.get("model_path"),
         overwrite=args.overwrite,
@@ -76,10 +76,10 @@ def load_settings_from_args(args) -> EvaluatorSettings:
         metrics=metrics,
     )
 
-    if not settings.training_data_path:
-        raise ValueError("A real training data CSV path must be provided via CLI or configs.")
-    if not os.path.exists(settings.training_data_path):
-        raise FileNotFoundError(f"Training data CSV not found: {settings.training_data_path}")
+    if not settings.real_data_path:
+        raise ValueError("Real data CSV path must be provided via CLI or configs.")
+    if not os.path.exists(settings.real_data_path):
+        raise FileNotFoundError(f"Real data CSV not found: {settings.real_data_path}")
     if not os.path.exists(settings.input_path):
         raise FileNotFoundError(f"Synthetic input path not found: {settings.input_path}")
 

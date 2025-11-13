@@ -185,11 +185,11 @@ class TestStatisticalMetricsIntegration:
         )
 
         # Check all expected metrics are present
-        assert 'alpha_precision' in metrics
-        assert 'beta_recall' in metrics
-        assert 'mean_abs_mean_diff' in metrics
-        assert 'mean_abs_std_diff' in metrics
-        assert 'avg_wasserstein' in metrics
+        assert 'statistical_alpha_precision' in metrics
+        assert 'statistical_beta_recall' in metrics
+        assert 'statistical_mean_abs_mean_diff' in metrics
+        assert 'statistical_mean_abs_std_diff' in metrics
+        assert 'statistical_avg_wasserstein' in metrics
 
         # Check all values are valid
         for key, value in metrics.items():
@@ -197,5 +197,5 @@ class TestStatisticalMetricsIntegration:
             assert value >= 0.0
 
         # Check alpha and beta are between 0 and 1
-        assert 0.0 <= metrics['alpha_precision'] <= 1.0
-        assert 0.0 <= metrics['beta_recall'] <= 1.0
+        assert 0.0 <= metrics['statistical_alpha_precision'] <= 1.0
+        assert 0.0 <= metrics['statistical_beta_recall'] <= 1.0

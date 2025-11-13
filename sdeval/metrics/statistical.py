@@ -11,20 +11,20 @@ from . import MetricContext, register_metric
 
 def _alpha_beta_metrics(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str, float]:
     real_cat_cols = [
-        c for c in real.columns if real[c].dtype == "object" or str(real[c].dtype).startswith("category")
+        col for col in real.columns if real[col].dtype == "object" or str(real[col].dtype).startswith("category")
     ]
     syn_cat_cols = [
-        c for c in syn.columns if syn[c].dtype == "object" or str(syn[c].dtype).startswith("category")
+        col for col in syn.columns if syn[col].dtype == "object" or str(syn[col].dtype).startswith("category")
     ]
-    cat_cols = [c for c in real_cat_cols if c in syn_cat_cols]
+    cat_cols = [col for col in real_cat_cols if col in syn_cat_cols]
     if not cat_cols:
-        return {"alpha_precision": 1.0, "beta_recall": 1.0}
+        return {"statistical_alpha_precision": 1.0, "statistical_beta_recall": 1.0}
 
     alphas: List[float] = []
     betas: List[float] = []
-    for c in cat_cols:
-        real_vals = set(pd.Series(real[c]).dropna().unique().tolist())
-        syn_vals = set(pd.Series(syn[c]).dropna().unique().tolist())
+    for col in cat_cols:
+        real_vals = set(pd.Series(real[col]).dropna().unique().tolist())
+        syn_vals = set(pd.Series(syn[col]).dropna().unique().tolist())
         if not syn_vals or not real_vals:
             continue
         inter = syn_vals & real_vals
@@ -32,22 +32,22 @@ def _alpha_beta_metrics(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str, floa
         betas.append(len(inter) / max(1, len(real_vals)))
 
     if not alphas:
-        return {"alpha_precision": 1.0, "beta_recall": 1.0}
+        return {"statistical_alpha_precision": 1.0, "statistical_beta_recall": 1.0}
 
     return {
-        "alpha_precision": float(sum(alphas) / len(alphas)),
-        "beta_recall": float(sum(betas) / len(betas)),
+        "statistical_alpha_precision": float(sum(alphas) / len(alphas)),
+        "statistical_beta_recall": float(sum(betas) / len(betas)),
     }
 
 
 def _numeric_summary_metrics(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str, float]:
-    real_numeric = [c for c in real.columns if np.issubdtype(real[c].dtype, np.number) and c in syn.columns]
+    real_numeric = [col for col in real.columns if np.issubdtype(real[col].dtype, np.number) and col in syn.columns]
     if not real_numeric:
         return {}
 
     mean_diffs = []
     std_diffs = []
-    wass = []
+    wasserstein_dists = []
     for col in real_numeric:
         real_col = pd.to_numeric(real[col], errors="coerce").dropna()
         syn_col = pd.to_numeric(syn[col], errors="coerce").dropna()
@@ -56,15 +56,15 @@ def _numeric_summary_metrics(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str,
         mean_diffs.append(abs(real_col.mean() - syn_col.mean()))
         std_diffs.append(abs(real_col.std(ddof=0) - syn_col.std(ddof=0)))
         if wasserstein_distance is not None:
-            wass.append(float(wasserstein_distance(real_col, syn_col)))
+            wasserstein_dists.append(float(wasserstein_distance(real_col, syn_col)))
 
     metrics: Dict[str, float] = {}
     if mean_diffs:
-        metrics["mean_abs_mean_diff"] = float(sum(mean_diffs) / len(mean_diffs))
+        metrics["statistical_mean_abs_mean_diff"] = float(sum(mean_diffs) / len(mean_diffs))
     if std_diffs:
-        metrics["mean_abs_std_diff"] = float(sum(std_diffs) / len(std_diffs))
-    if wass:
-        metrics["avg_wasserstein"] = float(sum(wass) / len(wass))
+        metrics["statistical_mean_abs_std_diff"] = float(sum(std_diffs) / len(std_diffs))
+    if wasserstein_dists:
+        metrics["statistical_avg_wasserstein"] = float(sum(wasserstein_dists) / len(wasserstein_dists))
     return metrics
 
 
@@ -242,11 +242,11 @@ def compute_statistical_metrics(real_df: pd.DataFrame, synthetic_df: pd.DataFram
         Dictionary with all statistical metrics
     """
     return {
-        'alpha_precision': compute_alpha_precision(real_df, synthetic_df, categorical_columns),
-        'beta_recall': compute_beta_recall(real_df, synthetic_df, categorical_columns),
-        'mean_abs_mean_diff': compute_mean_absolute_difference(real_df, synthetic_df, numerical_columns),
-        'mean_abs_std_diff': compute_std_absolute_difference(real_df, synthetic_df, numerical_columns),
-        'avg_wasserstein': compute_wasserstein_distance(real_df, synthetic_df, numerical_columns)
+        'statistical_alpha_precision': compute_alpha_precision(real_df, synthetic_df, categorical_columns),
+        'statistical_beta_recall': compute_beta_recall(real_df, synthetic_df, categorical_columns),
+        'statistical_mean_abs_mean_diff': compute_mean_absolute_difference(real_df, synthetic_df, numerical_columns),
+        'statistical_mean_abs_std_diff': compute_std_absolute_difference(real_df, synthetic_df, numerical_columns),
+        'statistical_avg_wasserstein': compute_wasserstein_distance(real_df, synthetic_df, numerical_columns)
     }
 
 
