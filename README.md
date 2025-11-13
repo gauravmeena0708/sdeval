@@ -540,10 +540,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - scipy for statistical functions
 - matplotlib/seaborn for visualization
 
-## 📧 Contact
 
-For questions or issues, please open an issue on GitHub or contact [your-email@example.com]
-
----
-
-**Built with ❤️ using Test-Driven Development**
