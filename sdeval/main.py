@@ -11,7 +11,7 @@ from .evaluator import Evaluator
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Synthetic Data Evaluator CLI")
     parser.add_argument("--input-path", required=True, help="Synthetic CSV file or directory.")
-    parser.add_argument("--training-data-csv-path", required=True, help="Real training data CSV.")
+    parser.add_argument("--real-data-csv-path", required=True, help="Real dataset CSV for evaluation.")
     parser.add_argument("--output-dir", required=True, help="Directory for evaluation outputs.")
     parser.add_argument("--model-path", help="Optional plausibility model directory.")
     parser.add_argument("--configs", help="Optional JSON configs file.")

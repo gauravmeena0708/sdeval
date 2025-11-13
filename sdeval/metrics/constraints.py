@@ -53,23 +53,23 @@ def parse_constraint(constraint: Optional[str]) -> List[Tuple[str, str]]:
     return parsed
 
 
-def compute_constraint_satisfaction_rate(df: pd.DataFrame, constraint: str) -> float:
+def compute_constraint_satisfaction_rate(real_df: pd.DataFrame, constraint: str) -> float:
     """
     Compute the proportion of samples satisfying a categorical constraint.
 
     Args:
-        df: DataFrame to evaluate
+        real_df: DataFrame to evaluate
         constraint: Constraint string (e.g., "education=11th" or "col1=val1,col2=val2")
 
     Returns:
         Float between 0 and 1 representing the satisfaction rate
 
     Examples:
-        >>> df = pd.DataFrame({'education': ['11th', 'Bachelors', '11th']})
-        >>> compute_constraint_satisfaction_rate(df, "education=11th")
+        >>> real_df = pd.DataFrame({'education': ['11th', 'Bachelors', '11th']})
+        >>> compute_constraint_satisfaction_rate(real_df, "education=11th")
         0.6666666666666666
     """
-    if df.empty:
+    if real_df.empty:
         return 0.0
 
     # Parse the constraint
@@ -80,19 +80,19 @@ def compute_constraint_satisfaction_rate(df: pd.DataFrame, constraint: str) -> f
         return 1.0
 
     # Start with all rows as True
-    mask = pd.Series([True] * len(df), index=df.index)
+    mask = pd.Series([True] * len(real_df), index=real_df.index)
 
     # Apply each constraint with AND logic
     for column, value in constraints:
-        if column not in df.columns:
-            raise KeyError(f"Column '{column}' not found in DataFrame. Available columns: {list(df.columns)}")
+        if column not in real_df.columns:
+            raise KeyError(f"Column '{column}' not found in DataFrame. Available columns: {list(real_df.columns)}")
 
         # Convert to string and strip whitespace for comparison
         # This handles datasets with leading/trailing spaces
-        mask &= (df[column].astype(str).str.strip() == value)
+        mask &= (real_df[column].astype(str).str.strip() == value)
 
     # Calculate satisfaction rate
-    satisfaction_rate = mask.sum() / len(df)
+    satisfaction_rate = mask.sum() / len(real_df)
     return float(satisfaction_rate)
 
 
@@ -269,7 +269,7 @@ RULE_HANDLERS = {
 
 
 @register_metric("constraints")
-def compute_constraint_metrics(ctx: MetricContext) -> Dict[str, Any]:
+def compute_constraints_metrics(ctx: MetricContext) -> Dict[str, Any]:
     constraints_cfg = ctx.settings.constraints or {}
     rules = constraints_cfg.get("rules", [])
     if not rules:
@@ -313,5 +313,5 @@ def compute_constraint_metrics(ctx: MetricContext) -> Dict[str, Any]:
         "constraints_total_rules": total_rules,
         "constraints_passed_rules": passed_rules,
         "constraints_hard_failures": hard_failures,
-        "constraint_rule_details": results,
+        "constraints_rule_details": results,
     }

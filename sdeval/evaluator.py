@@ -11,7 +11,7 @@ from .reporting import write_summary
 class Evaluator:
     def __init__(self, settings: EvaluatorSettings):
         self.settings = settings
-        self.real_df = load_real_data(settings.training_data_path)
+        self.real_df = load_real_data(settings.real_data_path)
 
     def _run_metrics(self, context: MetricContext) -> Dict[str, Dict]:
         metric_outputs: Dict[str, Dict] = {}

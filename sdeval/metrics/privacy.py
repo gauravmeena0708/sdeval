@@ -11,12 +11,12 @@ from . import MetricContext, register_metric
 
 
 def _select_numeric_overlap(real: pd.DataFrame, syn: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
-    num_cols = [c for c in real.columns if np.issubdtype(real[c].dtype, np.number) and c in syn.columns]
+    num_cols = [col for col in real.columns if np.issubdtype(real[col].dtype, np.number) and col in syn.columns]
     if not num_cols:
         return np.zeros((len(syn), 1), dtype=float), np.zeros((len(real), 1), dtype=float)
-    R = real[num_cols].copy().fillna(0.0).to_numpy(dtype=float)
-    G = syn[num_cols].copy().fillna(0.0).to_numpy(dtype=float)
-    return R, G
+    real_data_array = real[num_cols].copy().fillna(0.0).to_numpy(dtype=float)
+    synthetic_data_array = syn[num_cols].copy().fillna(0.0).to_numpy(dtype=float)
+    return real_data_array, synthetic_data_array
 
 
 def _prepare_numeric_data(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
@@ -179,14 +179,14 @@ def compute_privacy_metrics_registry(ctx: MetricContext) -> Dict[str, float]:
     """Wrapper for metric registry."""
     real = ctx.real_df
     syn = ctx.synthetic_df
-    R, G = _select_numeric_overlap(real, syn)
+    real_data_array, synthetic_data_array = _select_numeric_overlap(real, syn)
 
-    if R.shape[1] == 0:
+    if real_data_array.shape[1] == 0:
         return {"privacy_enabled": False, "privacy_reason": "no shared numeric columns"}
 
-    n_neighbors = 2 if len(R) >= 2 else 1
-    nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto").fit(R)
-    distances, _ = nbrs.kneighbors(G)
+    n_neighbors = 2 if len(real_data_array) >= 2 else 1
+    nbrs = NearestNeighbors(n_neighbors=n_neighbors, algorithm="auto").fit(real_data_array)
+    distances, _ = nbrs.kneighbors(synthetic_data_array)
 
     d1 = distances[:, 0]
     knn_mean = float(np.mean(d1)) if len(d1) else 0.0

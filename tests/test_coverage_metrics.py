@@ -173,10 +173,10 @@ class TestCoverageMetricsIntegration:
         )
 
         # Check all expected metrics are present
-        assert 'uniqueness_ratio' in metrics
-        assert 'rare_category_retention' in metrics
-        assert 'missing_category_ratio' in metrics
-        assert 'missingness_delta' in metrics
+        assert 'coverage_uniqueness_ratio' in metrics
+        assert 'coverage_rare_category_retention' in metrics
+        assert 'coverage_missing_category_ratio' in metrics
+        assert 'coverage_missingness_delta' in metrics
 
         # Check all values are valid
         for key, value in metrics.items():

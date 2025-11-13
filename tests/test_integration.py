@@ -51,11 +51,11 @@ class TestEndToEndWorkflow:
             col_types['categorical_columns']
         )
 
-        assert 'alpha_precision' in stats_metrics
-        assert 'beta_recall' in stats_metrics
-        assert 'mean_abs_mean_diff' in stats_metrics
-        assert 'mean_abs_std_diff' in stats_metrics
-        assert 'avg_wasserstein' in stats_metrics
+        assert 'statistical_alpha_precision' in stats_metrics
+        assert 'statistical_beta_recall' in stats_metrics
+        assert 'statistical_mean_abs_mean_diff' in stats_metrics
+        assert 'statistical_mean_abs_std_diff' in stats_metrics
+        assert 'statistical_avg_wasserstein' in stats_metrics
 
         # Step 4: Compute coverage metrics
         coverage_metrics = compute_coverage_metrics(
@@ -64,10 +64,10 @@ class TestEndToEndWorkflow:
             col_types['categorical_columns']
         )
 
-        assert 'uniqueness_ratio' in coverage_metrics
-        assert 'rare_category_retention' in coverage_metrics
-        assert 'missing_category_ratio' in coverage_metrics
-        assert 'missingness_delta' in coverage_metrics
+        assert 'coverage_uniqueness_ratio' in coverage_metrics
+        assert 'coverage_rare_category_retention' in coverage_metrics
+        assert 'coverage_missing_category_ratio' in coverage_metrics
+        assert 'coverage_missingness_delta' in coverage_metrics
 
         # Step 5: Compute privacy metrics (using samples for speed)
         real_sample = real_df.sample(n=min(1000, len(real_df)), random_state=42)
@@ -142,17 +142,17 @@ class TestEndToEndWorkflow:
         )
 
         # Test statistical metrics are in reasonable ranges
-        assert 0.7 <= stats['alpha_precision'] <= 1.0, "Alpha should be high for Adult train/test"
-        assert 0.7 <= stats['beta_recall'] <= 1.0, "Beta should be high for Adult train/test"
-        assert stats['mean_abs_mean_diff'] >= 0
-        assert stats['mean_abs_std_diff'] >= 0
-        assert stats['avg_wasserstein'] >= 0
+        assert 0.7 <= stats['statistical_alpha_precision'] <= 1.0, "Alpha should be high for Adult train/test"
+        assert 0.7 <= stats['statistical_beta_recall'] <= 1.0, "Beta should be high for Adult train/test"
+        assert stats['statistical_mean_abs_mean_diff'] >= 0
+        assert stats['statistical_mean_abs_std_diff'] >= 0
+        assert stats['statistical_avg_wasserstein'] >= 0
 
         # Test coverage metrics
-        assert 0.9 <= coverage['uniqueness_ratio'] <= 1.0, "Adult data should be mostly unique"
-        assert 0.0 <= coverage['rare_category_retention'] <= 1.0
-        assert 0.0 <= coverage['missing_category_ratio'] <= 0.3, "Missing categories should be low"
-        assert coverage['missingness_delta'] >= 0
+        assert 0.9 <= coverage['coverage_uniqueness_ratio'] <= 1.0, "Adult data should be mostly unique"
+        assert 0.0 <= coverage['coverage_rare_category_retention'] <= 1.0
+        assert 0.0 <= coverage['coverage_missing_category_ratio'] <= 0.3, "Missing categories should be low"
+        assert coverage['coverage_missingness_delta'] >= 0
 
     def test_evaluation_with_empty_dataframes(self):
         """Test that evaluation handles edge cases gracefully."""

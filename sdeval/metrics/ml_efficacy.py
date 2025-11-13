@@ -49,7 +49,7 @@ def compute_ml_efficacy(ctx: MetricContext) -> Dict[str, float]:
     if not task_type:
         task_type = "classification" if y_real.dtype == "object" or y_real.dtype.name == "category" else "regression"
 
-    results: Dict[str, float] = {"ml_efficacy_enabled": True, "ml_task_type": task_type}
+    results: Dict[str, float] = {"ml_efficacy_enabled": True, "ml_efficacy_task_type": task_type}
     seed = ctx.settings.seed
 
     if task_type == "classification":
@@ -58,17 +58,17 @@ def compute_ml_efficacy(ctx: MetricContext) -> Dict[str, float]:
         )
         model.fit(X_syn, y_syn)
         preds = model.predict(X_real)
-        results["ml_accuracy"] = float(accuracy_score(y_real, preds))
+        results["ml_efficacy_accuracy"] = float(accuracy_score(y_real, preds))
         try:
-            results["ml_f1_macro"] = float(f1_score(y_real, preds, average="macro"))
+            results["ml_efficacy_f1_macro"] = float(f1_score(y_real, preds, average="macro"))
         except ValueError:
-            results["ml_f1_macro"] = float("nan")
+            results["ml_efficacy_f1_macro"] = float("nan")
     else:
         model = RandomForestRegressor(n_estimators=200, random_state=seed, n_jobs=-1)
         model.fit(X_syn, y_syn)
         preds = model.predict(X_real)
-        results["ml_rmse"] = float(np.sqrt(mean_squared_error(y_real, preds)))
-        results["ml_mae"] = float(mean_absolute_error(y_real, preds))
-        results["ml_r2"] = float(r2_score(y_real, preds))
+        results["ml_efficacy_rmse"] = float(np.sqrt(mean_squared_error(y_real, preds)))
+        results["ml_efficacy_mae"] = float(mean_absolute_error(y_real, preds))
+        results["ml_efficacy_r2"] = float(r2_score(y_real, preds))
 
     return results

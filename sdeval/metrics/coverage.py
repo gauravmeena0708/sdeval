@@ -7,22 +7,22 @@ import pandas as pd
 from . import MetricContext, register_metric
 
 
-def _uniqueness_metric(df: pd.DataFrame) -> Dict[str, float]:
-    n = len(df)
+def _uniqueness_metric(synthetic_df: pd.DataFrame) -> Dict[str, float]:
+    n = len(synthetic_df)
     if n == 0:
         return {"coverage_unique_ratio": 0.0}
-    unique_rows = df.drop_duplicates().shape[0]
+    unique_rows = synthetic_df.drop_duplicates().shape[0]
     return {"coverage_unique_ratio": float(unique_rows / n)}
 
 
 def _rare_category_retention(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str, float]:
     real_cat_cols = [
-        c for c in real.columns if real[c].dtype == "object" or str(real[c].dtype).startswith("category")
+        col for col in real.columns if real[col].dtype == "object" or str(real[col].dtype).startswith("category")
     ]
     syn_cat_cols = [
-        c for c in syn.columns if syn[c].dtype == "object" or str(syn[c].dtype).startswith("category")
+        col for col in syn.columns if syn[col].dtype == "object" or str(syn[col].dtype).startswith("category")
     ]
-    shared_cols = [c for c in real_cat_cols if c in syn_cat_cols]
+    shared_cols = [col for col in real_cat_cols if col in syn_cat_cols]
     if not shared_cols:
         return {}
 
@@ -58,20 +58,20 @@ def _missingness_alignment(real: pd.DataFrame, syn: pd.DataFrame) -> Dict[str, f
 
 # Public API functions for testing
 
-def compute_uniqueness_ratio(df: pd.DataFrame) -> float:
+def compute_uniqueness_ratio(synthetic_df: pd.DataFrame) -> float:
     """
     Compute the fraction of unique rows in the dataset.
 
     Args:
-        df: Input DataFrame
+        synthetic_df: Input DataFrame
 
     Returns:
         Uniqueness ratio (0.0 to 1.0)
     """
-    n = len(df)
+    n = len(synthetic_df)
     if n == 0:
         return 0.0
-    unique_rows = df.drop_duplicates().shape[0]
+    unique_rows = synthetic_df.drop_duplicates().shape[0]
     return float(unique_rows / n)
 
 
@@ -176,10 +176,10 @@ def compute_coverage_metrics(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
         Dictionary with all coverage metrics
     """
     return {
-        'uniqueness_ratio': compute_uniqueness_ratio(synthetic_df),
-        'rare_category_retention': compute_rare_category_retention(real_df, synthetic_df, categorical_columns),
-        'missing_category_ratio': compute_missing_category_ratio(real_df, synthetic_df, categorical_columns),
-        'missingness_delta': compute_missingness_delta(real_df, synthetic_df)
+        'coverage_uniqueness_ratio': compute_uniqueness_ratio(synthetic_df),
+        'coverage_rare_category_retention': compute_rare_category_retention(real_df, synthetic_df, categorical_columns),
+        'coverage_missing_category_ratio': compute_missing_category_ratio(real_df, synthetic_df, categorical_columns),
+        'coverage_missingness_delta': compute_missingness_delta(real_df, synthetic_df)
     }
 
 
