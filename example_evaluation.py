@@ -59,11 +59,11 @@ def main():
         col_types['numerical_columns'],
         col_types['categorical_columns']
     )
-    print(f"   ✓ Alpha Precision: {stats['alpha_precision']:.3f}")
-    print(f"   ✓ Beta Recall: {stats['beta_recall']:.3f}")
-    print(f"   ✓ Mean Absolute Difference: {stats['mean_abs_mean_diff']:.3f}")
-    print(f"   ✓ Std Absolute Difference: {stats['mean_abs_std_diff']:.3f}")
-    print(f"   ✓ Wasserstein Distance: {stats['avg_wasserstein']:.3f}")
+    print(f"   ✓ Alpha Precision: {stats['statistical_alpha_precision']:.3f}")
+    print(f"   ✓ Beta Recall: {stats['statistical_beta_recall']:.3f}")
+    print(f"   ✓ Mean Absolute Difference: {stats['statistical_mean_abs_mean_diff']:.3f}")
+    print(f"   ✓ Std Absolute Difference: {stats['statistical_mean_abs_std_diff']:.3f}")
+    print(f"   ✓ Wasserstein Distance: {stats['statistical_avg_wasserstein']:.3f}")
     print()
 
     # Step 4: Compute coverage metrics
@@ -72,10 +72,10 @@ def main():
         real_df, synthetic_df,
         col_types['categorical_columns']
     )
-    print(f"   ✓ Uniqueness Ratio: {coverage['uniqueness_ratio']:.3f}")
-    print(f"   ✓ Rare Category Retention: {coverage['rare_category_retention']:.3f}")
-    print(f"   ✓ Missing Category Ratio: {coverage['missing_category_ratio']:.3f}")
-    print(f"   ✓ Missingness Delta: {coverage['missingness_delta']:.3f}")
+    print(f"   ✓ Uniqueness Ratio: {coverage['coverage_uniqueness_ratio']:.3f}")
+    print(f"   ✓ Rare Category Retention: {coverage['coverage_rare_category_retention']:.3f}")
+    print(f"   ✓ Missing Category Ratio: {coverage['coverage_missing_category_ratio']:.3f}")
+    print(f"   ✓ Missingness Delta: {coverage['coverage_missingness_delta']:.3f}")
     print()
 
     # Step 5: Compute privacy metrics (using samples for speed)
