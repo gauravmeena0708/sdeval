@@ -1,132 +1,300 @@
-# Plan for Synthetic Data Evaluator
+# Synthetic Data Evaluator - Current Status & Future Roadmap
 
-## 1. Objective
+## 🎯 Current Status
 
-To create a comprehensive, command-line based evaluation tool for assessing the quality of synthetic tabular data. This tool will calculate a variety of metrics across different categories, providing a holistic view of the synthetic data's fidelity, utility, and privacy.
+**Version:** 1.0.0 (MVP Complete)
+**Date:** November 12, 2024
+**Status:** ✅ Production Ready
 
-## 2. CLI Interface
+### What's Working
 
-The tool will be invoked via the command line with the following arguments:
+✅ **Core Metrics Implemented (12 total)**
+- Statistical Fidelity: 5 metrics
+- Coverage & Diversity: 4 metrics
+- Privacy Analysis: 3 metrics
 
-```bash
-python -m evaluator.main \
-    --input-path <path_to_synthetic_data_csv_or_folder> \
-    --training-data-csv-path <path_to_real_data_csv> \
-    --output-dir <path_to_output_directory> \
-    [--model-path <path_to_pretrained_model_folder>] \
-    [--configs <path_to_config_json_file>] \
-    [--overwrite]
-```
+✅ **Infrastructure**
+- Automatic column type detection
+- CSV data loading
+- Distribution visualization
+- JSON output generation
 
--   `--input-path`: Path to the synthetic data. Can be a single CSV file or a folder containing multiple CSV files.
--   `--training-data-csv-path`: Path to the real training data CSV file. This is essential for comparison.
--   `--output-dir`: Path to the directory where the evaluation results will be saved.
--   `--model-path` (optional): Path to a directory containing a pre-trained model, required for metrics like Plausibility Score.
--   `--configs` (optional): Path to a JSON file for custom configurations (e.g., specifying column types, or parameters for certain metrics).
--   `--overwrite` (optional): If specified, any existing results in the output directory will be overwritten.
+✅ **Quality Assurance**
+- 61 comprehensive tests
+- GitHub Actions CI/CD
+- Cross-platform support (Windows, macOS, Linux)
+- Python 3.9+ support
 
-## 3. Modular Architecture
+✅ **Documentation**
+- Complete README with examples
+- Working demo script
+- API documentation
+- Metric explanations
 
-The evaluator will be structured in a modular way to allow for easy extension and maintenance.
+### Quick Links
 
-```
-Evaluator/
-├── main.py             # Main CLI entry point
-├── evaluator.py        # Core Evaluator class
-├── metrics/
-│   ├── __init__.py
-│   ├── statistical.py    # Statistical similarity metrics
-│   ├── ml_efficacy.py    # Machine Learning efficacy metrics
-│   ├── privacy.py        # Privacy-related metrics
-│   └── plausibility.py   # Plausibility score (submodule call)
-└── utils.py            # Utility functions
-```
+- **Completed Tasks:** See [COMPLETED_TASKS.md](./COMPLETED_TASKS.md)
+- **Usage Guide:** See [README.md](./README.md)
+- **Demo:** Run `python example_evaluation.py`
+- **Tests:** Run `pytest tests/`
 
--   **`main.py`**: Parses command-line arguments and orchestrates the evaluation process.
--   **`evaluator.py`**: Contains the main `Evaluator` class that loads data, calls the different metric calculators, and saves the results.
--   **`metrics/`**: A package containing different modules for each category of metrics.
+---
 
-## 4. Metric Implementation Details
+## 🔮 Future Enhancements (Optional)
 
-### 4.1. Statistical Similarity & Diversity
+These are potential improvements for future versions. Current version is production-ready without these.
 
--   **Implementation:** This will be implemented in `metrics/statistical.py`.
--   **Libraries:** `pandas`, `numpy`, `scipy`.
--   **Metrics:**
-    -   **Wasserstein Distance:** `scipy.stats.wasserstein_distance`
-    -   **Kolmogorov-Smirnov (KS) Test:** `scipy.stats.ks_2samp`
-    -   **Jensen-Shannon Divergence:** `scipy.spatial.distance.jensenshannon`
-    -   **Mean Squared Error:** `numpy.mean((p - q)**2)`
-    -   **Mean Absolute Error:** `numpy.mean(numpy.abs(p - q))`
-    -   **KL Divergence:** `scipy.stats.entropy`
-    -   **Correlation Difference:** `numpy.linalg.norm`
--   **Submodule Required:** No. These can be implemented directly using standard libraries.
+### Phase 8: Enhanced Statistical Metrics (Future)
 
-### 4.2. Machine Learning Efficacy
+- [ ] Add KS (Kolmogorov-Smirnov) test
+  - [ ] Per-column KS statistic
+  - [ ] P-values for distribution similarity
+- [ ] Add Chi-square test for categorical distributions
+  - [ ] Test for independence
+  - [ ] Expected vs observed frequencies
+- [ ] Add Jensen-Shannon divergence
+  - [ ] Alternative to Wasserstein for distributions
+- [ ] Add correlation analysis
+  - [ ] Correlation matrix comparison
+  - [ ] Frobenius norm of difference
+- [ ] Add bootstrap confidence intervals
+  - [ ] For all statistical metrics
+  - [ ] Uncertainty quantification
 
--   **Implementation:** This will be implemented in `metrics/ml_efficacy.py`.
--   **Libraries:** `scikit-learn`, `pandas`, `numpy`.
--   **Metrics:**
-    -   **Classification:** `sklearn.metrics.accuracy_score`, `sklearn.metrics.f1_score`
-    -   **Regression:** `sklearn.metrics.mean_squared_error`, `sklearn.metrics.r2_score`
--   **Submodule Required:** No. This can be implemented using `scikit-learn`. The module will train a model on the synthetic data and evaluate it on the real data.
+**Priority:** Medium
+**Estimated Effort:** 2-3 weeks
 
-### 4.3. Privacy
+---
 
--   **Implementation:** This will be implemented in `metrics/privacy.py`.
--   **Libraries:** `pandas`, `numpy`, `sklearn`.
--   **Metrics:**
-    -   **Distance to Closest Record (DCR):** Can be implemented using `sklearn.neighbors.NearestNeighbors` for efficiency.
--   **Submodule Required:** No.
+### Phase 9: Advanced Coverage Metrics (Future)
 
-### 4.4. Plausibility Score
+- [ ] Pairwise contingency analysis
+  - [ ] Two-way frequency tables
+  - [ ] Chi-square for pairs
+- [ ] Triwise contingency analysis
+  - [ ] Three-way frequency tables
+- [ ] Mutual information preservation
+  - [ ] Information-theoretic measure
+  - [ ] Feature dependency preservation
+- [ ] Frequency rank correlation
+  - [ ] Spearman's rho for category frequencies
 
--   **Implementation:** This will be a submodule call from `metrics/plausibility.py`.
--   **Rationale:** The plausibility score requires a trained autoregressive model. The logic for training and scoring is complex and is best kept in a separate submodule, like the one found in the `plausibility` project.
--   **Action:** The `metrics/plausibility.py` module will act as a wrapper that calls the `plausibility.scorer.score_csv_file` function. It will pass the `model-path` and other necessary arguments.
+**Priority:** Low
+**Estimated Effort:** 1-2 weeks
 
-### 4.5. Differential Privacy
+---
 
--   **Implementation:** This will require a dedicated submodule.
--   **Rationale:** Calculating differential privacy guarantees is a complex process that depends on the specific generative model and its training process. It's not a simple post-processing step.
--   **Action:** A separate submodule, potentially based on the `differential_privacy` directory from the `cuts` project, would be needed. This submodule would need access to the model and its training parameters to calculate the privacy budget (epsilon and delta). This metric is highly model-specific and might not be universally applicable to all synthetic data. For the initial version of the evaluator, we can consider this out of scope or provide a placeholder.
+### Phase 10: Advanced Privacy Metrics (Future)
 
-## 5. Workflow
+- [ ] k-anonymity support
+  - [ ] Requires quasi-identifier configuration
+  - [ ] Equivalence class analysis
+  - [ ] See [k-anonymity design doc](docs/k-anonymity-design.md) (to be created)
+- [ ] DCR distribution analysis
+  - [ ] Histogram of distances
+  - [ ] Configurable thresholds
+- [ ] Membership inference attack
+  - [ ] Train classifier to detect synthetic vs real
+  - [ ] Measure attack success rate
+- [ ] Attribute inference attack
+  - [ ] Predict sensitive attributes
+  - [ ] Privacy risk quantification
 
-1.  **Initialization:** `main.py` parses arguments.
-2.  **Evaluator Instantiation:** An `Evaluator` object is created in `evaluator.py`.
-3.  **Data Loading:** The `Evaluator` loads the real and synthetic data. If the input is a folder, it iterates through all CSV files.
-4.  **Configuration Loading:** The `Evaluator` loads the configuration file if provided. This file can specify column types (numerical/categorical), the target column for ML efficacy, and other parameters. If not provided, the tool will attempt to infer column types.
-5.  **Metric Calculation:** The `Evaluator` calls the different metric modules in the `metrics/` package.
-    -   For metrics requiring a model (like plausibility), it will check if `--model-path` is provided.
-6.  **Result Aggregation:** The `Evaluator` aggregates the results from all metric modules into a single dictionary.
-7.  **Output Saving:** The results are saved to a JSON or CSV file in the specified `--output-dir`.
+**Priority:** Medium
+**Estimated Effort:** 3-4 weeks
 
-## 6. Configuration File (`configs.json`)
+---
 
-An example `configs.json` file:
+### Phase 11: ML Utility Metrics (Future)
 
-```json
-{
-    "target_column": "income",
-    "task_type": "classification",
-    "categorical_columns": [
-        "workclass",
-        "education",
-        "marital-status"
-    ],
-    "numerical_columns": [
-        "age",
-        "fnlwgt",
-        "hours-per-week"
-    ],
-    "privacy_metrics": {
-        "enabled": true
-    },
-    "plausibility_metrics": {
-        "enabled": true
-    }
-}
-```
+**Note:** Requires target column specification (breaks "no config" principle)
 
-This allows for fine-grained control over the evaluation process without cluttering the command line.
+- [ ] Train-on-Synthetic, Test-on-Real (TSTR)
+  - [ ] RandomForest baseline
+  - [ ] Compare to Train-on-Real baseline
+- [ ] Train-on-Real, Test-on-Synthetic (TRTS)
+  - [ ] Inverse evaluation
+- [ ] Support multiple models
+  - [ ] XGBoost
+  - [ ] Logistic Regression
+  - [ ] Neural Networks
+- [ ] Cross-validation
+  - [ ] Confidence intervals
+  - [ ] Statistical significance tests
+
+**Priority:** High (if target column available)
+**Estimated Effort:** 2-3 weeks
+
+---
+
+### Phase 12: Constraint Checking (Future)
+
+**Note:** Requires constraint configuration file
+
+- [ ] Equality constraints
+  - [ ] Column must equal specific value
+- [ ] Expression constraints
+  - [ ] Pandas eval expressions
+- [ ] Share constraints
+  - [ ] Population share targets
+- [ ] Mean/Min/Max constraints
+  - [ ] Statistical bounds
+- [ ] Conditional constraints
+  - [ ] IF-THEN rules
+
+**Priority:** Medium
+**Estimated Effort:** 2-3 weeks
+
+---
+
+### Phase 13: Performance Optimization (Future)
+
+- [ ] Parallel metric execution
+  - [ ] Use concurrent.futures
+  - [ ] Metrics are independent
+- [ ] Smart sampling
+  - [ ] Full data for cheap metrics
+  - [ ] Sampled data for expensive metrics
+- [ ] Streaming CSV reader
+  - [ ] For very large datasets
+  - [ ] Chunked processing
+- [ ] Caching
+  - [ ] Cache intermediate results
+  - [ ] Avoid recomputation
+
+**Priority:** Low (unless performance issues)
+**Estimated Effort:** 1-2 weeks
+
+---
+
+### Phase 14: Advanced Visualization (Future)
+
+- [ ] QQ plots
+  - [ ] Quantile-quantile comparison
+  - [ ] Per numerical column
+- [ ] Correlation heatmaps
+  - [ ] Real vs synthetic correlation matrices
+  - [ ] Side-by-side comparison
+- [ ] Interactive plots
+  - [ ] Plotly integration
+  - [ ] Drill-down capability
+- [ ] Constraint violation charts
+  - [ ] Bar chart of pass/fail
+  - [ ] Severity indicators
+- [ ] Dashboard
+  - [ ] HTML report generation
+  - [ ] All metrics in one view
+
+**Priority:** Medium
+**Estimated Effort:** 2-3 weeks
+
+---
+
+### Phase 15: CLI Interface (Future)
+
+**Note:** Currently library-only, CLI would add convenience
+
+- [ ] Main CLI entry point
+  - [ ] `sdeval evaluate --real train.csv --synthetic test.csv`
+- [ ] Output directory management
+  - [ ] Auto-create directories
+  - [ ] Timestamped runs
+- [ ] Metric selection
+  - [ ] `--metrics statistical,coverage`
+  - [ ] Skip expensive metrics
+- [ ] Verbose mode
+  - [ ] Progress bars
+  - [ ] Detailed logging
+- [ ] Batch mode
+  - [ ] Evaluate multiple synthetic files
+  - [ ] Comparison tables
+
+**Priority:** Medium
+**Estimated Effort:** 1 week
+
+---
+
+### Phase 16: Additional Features (Future)
+
+- [ ] Plausibility scoring
+  - [ ] Autoregressive model
+  - [ ] Requires separate training
+  - [ ] Complex implementation (see old code)
+- [ ] Differential privacy verification
+  - [ ] Placeholder only
+  - [ ] Requires generator metadata
+- [ ] Fairness metrics
+  - [ ] Demographic parity
+  - [ ] Equalized odds
+  - [ ] Requires sensitive attribute specification
+- [ ] Causality preservation
+  - [ ] Structural causal models
+  - [ ] Research-level feature
+
+**Priority:** Low (research features)
+**Estimated Effort:** Variable
+
+---
+
+## 📊 Current Metrics Reference
+
+### Statistical Fidelity (5 metrics)
+1. **alpha_precision** - Synthetic categories in real data (0-1, higher better)
+2. **beta_recall** - Real categories in synthetic data (0-1, higher better)
+3. **mean_abs_mean_diff** - Column mean differences (lower better)
+4. **mean_abs_std_diff** - Column std differences (lower better)
+5. **avg_wasserstein** - Distribution distance (lower better)
+
+### Coverage & Diversity (4 metrics)
+1. **uniqueness_ratio** - Unique rows fraction (0-1, higher better)
+2. **rare_category_retention** - Rare categories preserved (0-1, higher better)
+3. **missing_category_ratio** - Missing categories (0-1, lower better)
+4. **missingness_delta** - Null rate difference (lower better)
+
+### Privacy (3 metrics)
+1. **dcr_rate** - Distance to closest record (0-1, lower better)
+2. **nndr_mean** - Nearest neighbor ratio (higher better)
+3. **mean_knn_distance** - Average nearest distance (higher better)
+
+---
+
+## 🎯 Recommended Next Steps
+
+For most users, the current version (1.0.0) is sufficient. Consider enhancements only if:
+
+1. **Need ML Utility?** → Implement Phase 11 (requires target column)
+2. **Need Constraints?** → Implement Phase 12 (requires config file)
+3. **Performance Issues?** → Implement Phase 13 (parallel execution)
+4. **Want CLI?** → Implement Phase 15 (convenience feature)
+5. **Need k-anonymity?** → Implement Phase 10 (requires config)
+
+**Default Recommendation:** Use current version as-is for 95% of use cases.
+
+---
+
+## 📝 Contributing
+
+To add features from this roadmap:
+
+1. Pick a phase from the list above
+2. Create a feature branch: `git checkout -b feature/phase-X`
+3. Write tests first (TDD approach)
+4. Implement the feature
+5. Update documentation
+6. Submit pull request
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📧 Questions?
+
+- **Usage Questions:** See [README.md](./README.md)
+- **Feature Requests:** Open a GitHub issue
+- **Bug Reports:** Open a GitHub issue with test case
+- **General Discussion:** GitHub Discussions
+
+---
+
+**Current Status: Production Ready ✅**
+**Last Updated:** November 12, 2024

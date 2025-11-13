@@ -1,0 +1,33 @@
+[project]
+name = "sdeval"
+version = "0.0.1"
+description = "Constraint-aware synthetic data evaluation CLI"
+readme = {file = "plan.md", content-type = "text/markdown"}
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Synthetic Data Team"}
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "torch",
+    "transformers",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["old_code*"]
