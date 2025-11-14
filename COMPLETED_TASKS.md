@@ -214,12 +214,14 @@ This document archives all completed tasks from the implementation checklist.
   - Constraint violation bar charts
   - Statistical summary boards with alpha/beta, KS, chi-square, JSD, and correlation delta metrics
 - Introduced radar dashboards (data-quality vs privacy) and advanced KPI bars in the bulk pipeline.
+- Added standalone HTML reports (`--html-report`) that embed metric tables and diagnostics for each dataset.
 - Every `--visualize` run now writes per-file PNGs under `outputs/visualizations/<name>/` for fast inspection.
 
 **Artifacts:**
 - `sdeval/visualization.py`
-- `sdeval/evaluator.py` (visualization hooks)
+- `sdeval/evaluator.py` (visualization & HTML hooks)
 - `sdeval/evaluate_bulk.py` (data-quality & privacy dashboards)
+- `sdeval/reporting/html_report.py`
 
 ---
 

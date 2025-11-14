@@ -31,6 +31,7 @@ class EvaluatorSettings:
     quiet: bool = False
     show_progress: bool = True
     visualize: bool = False
+    html_report: bool = False
 
     def ensure_output_dir(self) -> None:
         path = Path(self.output_dir)
@@ -79,6 +80,7 @@ def load_settings_from_args(args) -> EvaluatorSettings:
         constraints=constraints_dict,
         metrics=metrics,
         visualize=args.visualize,
+        html_report=args.html_report,
     )
 
     if not settings.real_data_path:

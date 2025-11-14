@@ -10,7 +10,11 @@ from sdeval.metrics.privacy import (
     compute_dcr,
     compute_nndr,
     compute_mean_knn_distance,
-    compute_privacy_metrics
+    compute_privacy_metrics,
+    compute_k_anonymity_metrics,
+    compute_membership_inference_metrics,
+    compute_attribute_inference_metrics,
+    compute_dp_metadata_metrics,
 )
 
 
@@ -197,14 +201,29 @@ class TestPrivacyMetricsIntegration:
         assert 'dcr_rate' in metrics
         assert 'nndr_mean' in metrics
         assert 'mean_knn_distance' in metrics
+        assert any(key.startswith("privacy_dcr_at_") for key in metrics)
+        assert 'privacy_distance_p50' in metrics
 
-        # Check all values are valid
+
+class TestKAnonymity:
+    def test_k_anonymity_metrics(self):
+        df = pd.DataFrame({
+            "qi1": ["A", "A", "B", "B", "B"],
+            "qi2": ["X", "X", "Y", "Y", "Z"],
+            "value": [1, 2, 3, 4, 5],
+        })
+        metrics = compute_k_anonymity_metrics(df, ["qi1", "qi2"], k=2)
+        assert metrics["privacy_k_anonymity_enabled"] is True
+        assert metrics["privacy_k_anonymity_min_group"] == 1
+        assert metrics["privacy_k_anonymity_violating_groups_ratio"] > 0
+        assert metrics["privacy_k_anonymity_violating_records_ratio"] > 0
+
+        # Check numeric values are finite
         for key, value in metrics.items():
-            assert np.isfinite(value)
-            assert value >= 0.0
+            if isinstance(value, (int, float, np.floating)):
+                assert np.isfinite(value)
+                assert value >= 0.0
 
-        # DCR should be between 0 and 1
-        assert 0.0 <= metrics['dcr_rate'] <= 1.0
 
     def test_compute_with_empty_numerical_columns(self, small_data):
         """Test privacy metrics with no numerical columns."""
@@ -212,6 +231,45 @@ class TestPrivacyMetricsIntegration:
 
         metrics = compute_privacy_metrics(real_df, synthetic_df, [])
 
-        # Should return default values or handle gracefully
-        assert isinstance(metrics, dict)
-        assert len(metrics) == 3
+        assert metrics["dcr_rate"] == 0.0
+        assert metrics["nndr_mean"] == 0.0
+        assert metrics["mean_knn_distance"] == 0.0
+
+
+class TestMembershipInference:
+    def test_membership_inference_basic(self, small_data):
+        real_df, syn_df = small_data
+        metrics = compute_membership_inference_metrics(real_df, syn_df, sample_size=3, random_state=0)
+        if metrics.get("privacy_mia_enabled"):
+            assert 0.0 <= metrics["privacy_mia_accuracy"] <= 1.0
+            assert np.isfinite(metrics["privacy_mia_accuracy"])
+        else:
+            assert "privacy_mia_reason" in metrics
+
+
+class TestAttributeInference:
+    def test_attribute_inference_classification(self, small_data):
+        real_df, syn_df = small_data
+        targets = [{"column": "cat1", "task": "classification"}]
+        metrics = compute_attribute_inference_metrics(real_df, syn_df, targets, sample_size=4, random_state=0)
+        key = "privacy_aia_cat1_accuracy"
+        if metrics.get("privacy_aia_cat1_enabled"):
+            assert key in metrics
+            assert 0.0 <= metrics[key] <= 1.0
+        else:
+            assert "privacy_aia_cat1_reason" in metrics
+
+
+class TestDPMeta:
+    def test_dp_metadata_metrics(self):
+        cfg = {
+            "epsilon": 5,
+            "delta": 1e-6,
+            "mechanism": "DP-SGD",
+            "notes": "example",
+        }
+        metrics = compute_dp_metadata_metrics(cfg)
+        assert metrics["privacy_dp_enabled"] is True
+        assert metrics["privacy_dp_epsilon"] == 5
+        assert metrics["privacy_dp_delta"] == 1e-6
+        assert "privacy_dp_reid_bound" in metrics

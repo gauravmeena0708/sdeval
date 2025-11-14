@@ -66,6 +66,8 @@ Examples:
                        help="Overwrite output directory if it exists.")
     parser.add_argument("--visualize", action="store_true",
                        help="Generate diagnostic plots for each synthetic file.")
+    parser.add_argument("--html-report", action="store_true",
+                       help="Generate standalone HTML report(s) summarizing metrics and visuals.")
 
     return parser
 

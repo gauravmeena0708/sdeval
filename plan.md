@@ -63,17 +63,17 @@ These are potential improvements for future versions. Current version is product
 
 ### Phase 8: Enhanced Statistical Metrics (Future)
 
-- [ ] Add KS (Kolmogorov-Smirnov) test
-  - [ ] Per-column KS statistic
-  - [ ] P-values for distribution similarity
-- [ ] Add Chi-square test for categorical distributions
-  - [ ] Test for independence
-  - [ ] Expected vs observed frequencies
-- [ ] Add Jensen-Shannon divergence
-  - [ ] Alternative to Wasserstein for distributions
-- [ ] Add correlation analysis
-  - [ ] Correlation matrix comparison
-  - [ ] Frobenius norm of difference
+- [x] Add KS (Kolmogorov-Smirnov) test
+  - [x] Per-column KS statistic
+  - [x] P-values for distribution similarity (aggregate average available)
+- [x] Add Chi-square test for categorical distributions
+  - [x] Test for independence / goodness-of-fit
+  - [x] Expected vs observed frequencies
+- [x] Add Jensen-Shannon divergence
+  - [x] Alternative to Wasserstein for distributions
+- [x] Add correlation analysis
+  - [x] Correlation matrix comparison
+  - [x] Frobenius norm of difference
 - [ ] Add bootstrap confidence intervals
   - [ ] For all statistical metrics
   - [ ] Uncertainty quantification
@@ -101,21 +101,22 @@ These are potential improvements for future versions. Current version is product
 
 ---
 
-### Phase 10: Advanced Privacy Metrics (Future)
-
-- [ ] k-anonymity support
-  - [ ] Requires quasi-identifier configuration
-  - [ ] Equivalence class analysis
-  - [ ] See [k-anonymity design doc](docs/k-anonymity-design.md) (to be created)
-- [ ] DCR distribution analysis
-  - [ ] Histogram of distances
-  - [ ] Configurable thresholds
-- [ ] Membership inference attack
-  - [ ] Train classifier to detect synthetic vs real
-  - [ ] Measure attack success rate
-- [ ] Attribute inference attack
-  - [ ] Predict sensitive attributes
-  - [ ] Privacy risk quantification
+- ### Phase 10: Advanced Privacy Metrics (Future)
+ 
+ - [x] k-anonymity support
+   - [x] Requires quasi-identifier configuration
+   - [x] Equivalence class analysis
+   - [ ] See [k-anonymity design doc](docs/k-anonymity-design.md) (to be created)
+ - [x] DCR distribution analysis
+   - [x] Histogram/percentile summaries
+   - [x] Configurable thresholds
+ - [x] Membership inference attack
+   - [x] Train classifier to detect synthetic vs real
+   - [x] Measure attack success rate
+ - [x] Attribute inference attack
+   - [x] Predict sensitive attributes using synthetic-only training
+   - [x] Report accuracy/F1 or RMSE/R²
+ - [ ] Differential privacy verification
 
 **Priority:** Medium
 **Estimated Effort:** 3-4 weeks

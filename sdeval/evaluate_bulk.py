@@ -128,6 +128,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Enable visual outputs (dashboards plus per-file diagnostics).",
     )
+    parser.add_argument(
+        "--html-report",
+        action="store_true",
+        help="Generate HTML reports for each evaluated CSV.",
+    )
     return parser.parse_args(argv)
 
 
@@ -135,7 +140,14 @@ def find_synthetic_csvs(directory: Path, pattern: str) -> List[Path]:
     return sorted(directory.glob(pattern))
 
 
-def run_sdeval(csv_path: Path, real_data_csv: Path, output_dir: Path, overwrite: bool, visualize: bool) -> None:
+def run_sdeval(
+    csv_path: Path,
+    real_data_csv: Path,
+    output_dir: Path,
+    overwrite: bool,
+    visualize: bool,
+    html_report: bool,
+) -> None:
     cmd = [
         sys.executable,
         "-m",
@@ -151,6 +163,8 @@ def run_sdeval(csv_path: Path, real_data_csv: Path, output_dir: Path, overwrite:
         cmd.append("--overwrite")
     if visualize:
         cmd.append("--visualize")
+    if html_report:
+        cmd.append("--html-report")
     print(f"[RUN] Evaluating {csv_path.name}")
     subprocess.run(cmd, check=True)
 
@@ -467,7 +481,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         raise SystemExit(f"No CSV files found in {synthetic_dir} matching {args.synthetic_pattern}")
 
     for csv_path in csv_paths:
-        run_sdeval(csv_path, real_data_csv, output_dir, args.overwrite, args.visualize)
+        run_sdeval(csv_path, real_data_csv, output_dir, args.overwrite, args.visualize, args.html_report)
 
     summary_paths: List[Path] = []
     for csv_path in csv_paths:
