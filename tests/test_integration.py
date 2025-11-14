@@ -169,5 +169,6 @@ class TestEndToEndWorkflow:
         )
 
         # Should return valid metrics (even if 0 or default values)
+        # Returns base 5 metrics + 2 correlation delta metrics = 7 total
         assert isinstance(stats, dict)
-        assert len(stats) == 5
+        assert len(stats) == 7
