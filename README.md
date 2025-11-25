@@ -5,6 +5,13 @@ A comprehensive toolkit for evaluating synthetic tabular datasets against real t
 [![Tests](https://github.com/gauravmeena0708/sdeval/actions/workflows/tests.yml/badge.svg)](https://github.com/gauravmeena0708/sdeval/actions)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
+# Synthetic Data Evaluator (sdeval)
+
+A comprehensive toolkit for evaluating synthetic tabular datasets against real training data. Compute statistical fidelity, coverage, privacy metrics, and generate comparison visualizations.
+
+[![Tests](https://github.com/gauravmeena0708/sdeval/actions/workflows/tests.yml/badge.svg)](https://github.com/gauravmeena0708/sdeval/actions)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+
 ## 🎯 Features
 
 - **12+ Evaluation Metrics** across 4 categories:
@@ -12,11 +19,10 @@ A comprehensive toolkit for evaluating synthetic tabular datasets against real t
   - Coverage & Diversity (4 metrics)
   - Privacy Analysis (3 metrics)
   - Constraint Satisfaction (new!)
+- **Differential Privacy Tools** - Mechanisms (Gaussian, Laplace) and parameter conversion
 - **Automatic column type detection** (numerical/categorical)
 - **Visualization tools** for distribution comparisons and KPI dashboards
 - **Bulk evaluation pipeline** that sweeps entire folders, writes Excel scorecards, and exports color-coded PNGs
-- **Constraint satisfaction rate** - measure how well synthetic data preserves categorical constraints
-- **No configuration required** - just point to your CSV files
 - **Comprehensive test suite** (80 tests)
 - **Production-ready** with full test coverage
 
@@ -473,6 +479,42 @@ for wc in workclass_values:
 - Best used for categorical columns; numerical constraints not supported yet
 
 See `example_constraint_evaluation.py` for a complete working example.
+
+
+## 🔒 Differential Privacy Tools
+
+`sdeval` now includes a built-in library for differential privacy mechanisms and parameter conversion.
+
+### CLI Usage
+
+You can use the `sdeval dp` command group to apply mechanisms or convert parameters directly from the command line.
+
+```bash
+# Apply Gaussian mechanism
+sdeval dp gaussian --value 100 --sigma 1.0
+
+# Apply Laplace mechanism
+sdeval dp laplace --value 50 --scale 2.0
+
+# Convert CDP (rho) to Delta
+sdeval dp cdp-to-delta --rho 0.5 --epsilon 1.0
+```
+
+### Python API Usage
+
+```python
+import torch
+from sdeval.dp import gaussian_mechanism, laplace_mechanism, cdp_rho
+
+# Apply Gaussian noise
+val = torch.tensor([100.0])
+noisy_val = gaussian_mechanism(val, sigma=1.0)
+print(f"Noisy value: {noisy_val.item()}")
+
+# Convert parameters
+rho = cdp_rho(epsilon=1.0, delta=1e-5)
+print(f"Equivalent rho: {rho}")
+```
 
 
 ## 🎨 Visualization

@@ -13,7 +13,9 @@
 - Coverage & Diversity: 4 metrics
 - Privacy Analysis: 3 metrics
 - **ML Efficacy: TSTR evaluation** (NEW!)
+- **ML Efficacy: TSTR evaluation** (NEW!)
 - **Constraint Satisfaction: Categorical constraints** (NEW!)
+- **Differential Privacy Tools: Mechanisms & Accounting** (NEW!)
 
 ✅ **Infrastructure**
 - Automatic column type detection
@@ -116,7 +118,12 @@ These are potential improvements for future versions. Current version is product
  - [x] Attribute inference attack
    - [x] Predict sensitive attributes using synthetic-only training
    - [x] Report accuracy/F1 or RMSE/R²
- - [ ] Differential privacy verification
+ - [x] Attribute inference attack
+   - [x] Predict sensitive attributes using synthetic-only training
+   - [x] Report accuracy/F1 or RMSE/R²
+ - [x] Differential privacy tools
+   - [x] Gaussian, Laplace, Exponential mechanisms
+   - [x] Parameter conversion (CDP <-> ADP)
 
 **Priority:** Medium
 **Estimated Effort:** 3-4 weeks
