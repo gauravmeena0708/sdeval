@@ -13,6 +13,7 @@ ROOT_HELP = dedent(
     Commands:
       evaluate         Run the standard sdeval evaluator (same flags as `python -m sdeval.main`).
       evaluate_bulk    Evaluate every CSV in a folder and produce Excel/visual summaries.
+      dp               Differential Privacy mechanisms and conversions.
 
     Use `sdeval <command> --help` to view command-specific options.
     """
@@ -42,6 +43,11 @@ def main(argv: list[str] | None = None) -> int:
 
         bulk_cli.main(sub_args)
         return 0
+
+    if command == "dp":
+        from .dp import cli as dp_cli
+
+        return dp_cli.main(sub_args)
 
     print(f"Unknown command '{command}'.", file=sys.stderr)
     _print_help()
