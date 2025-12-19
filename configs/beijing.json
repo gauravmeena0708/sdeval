@@ -1,0 +1,40 @@
+{
+    "dataset_name": "beijing",
+    "description": "Beijing Air Quality dataset - Regression for PM2.5 prediction",
+    "target_column": "pm2.5",
+    "task_type": "regression",
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ]
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "pm25_non_negative",
+                "type": "expression",
+                "expression": "pm2.5 >= 0",
+                "description": "PM2.5 concentration must be non-negative"
+            },
+            {
+                "id": "temperature_range",
+                "type": "expression",
+                "expression": "(TEMP >= -40) & (TEMP <= 50)",
+                "description": "Temperature should be within reasonable Beijing range (Celsius)"
+            },
+            {
+                "id": "pressure_range",
+                "type": "expression",
+                "expression": "(PRES >= 900) & (PRES <= 1100)",
+                "description": "Atmospheric pressure should be realistic (hPa)"
+            },
+            {
+                "id": "humidity_range",
+                "type": "expression",
+                "expression": "(DEWP >= -50) & (DEWP <= 40)",
+                "description": "Dew point should be reasonable"
+            }
+        ]
+    },
+    "notes": "Air quality regression task. No sensitive personal attributes."
+}

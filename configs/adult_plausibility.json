@@ -1,0 +1,48 @@
+{
+    "dataset_name": "adult",
+    "description": "UCI Adult Income dataset with plausibility scoring enabled",
+    "target_column": "income",
+    "task_type": "classification",
+    "plausibility_metrics": {
+        "train_if_missing": true,
+        "train_epochs": 50
+    },
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ],
+        "k_anonymity": {
+            "quasi_identifiers": [
+                "age",
+                "education",
+                "occupation",
+                "sex",
+                "race"
+            ],
+            "k": 5
+        }
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "age_range",
+                "type": "expression",
+                "expression": "(age >= 17) & (age <= 90)",
+                "description": "Age should be within reasonable range"
+            },
+            {
+                "id": "capital_mutual_exclusivity",
+                "type": "expression",
+                "expression": "(`capital.gain` == 0) | (`capital.loss` == 0)",
+                "description": "Capital gain and loss should not both be non-zero"
+            },
+            {
+                "id": "hours_per_week_range",
+                "type": "expression",
+                "expression": "(`hours.per.week` >= 1) & (`hours.per.week` <= 99)",
+                "description": "Hours per week should be reasonable"
+            }
+        ]
+    },
+    "notes": "This config enables plausibility scoring with auto-training. The model will be trained on first run and cached for future evaluations."
+}
