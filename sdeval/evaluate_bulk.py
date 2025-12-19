@@ -119,6 +119,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Path to write Excel summary (default: <output-dir>/summary.xlsx).",
     )
     parser.add_argument(
+        "--csv-path",
+        default=None,
+        help="Path to write CSV summary (default: <output-dir>/summary.csv).",
+    )
+    parser.add_argument(
         "--visualization-dir",
         default=None,
         help="Directory for PNG dashboards (default: <output-dir>/visualizations).",
@@ -344,6 +349,12 @@ def write_excel(rows: List[Dict[str, Any]], metrics: Sequence[str], highlights: 
         sheet.freeze_panes = "B2"
 
 
+def write_csv(rows: List[Dict[str, Any]], metrics: Sequence[str], csv_path: Path) -> None:
+    df = build_dataframe(rows, metrics)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(csv_path, index=False)
+
+
 def clamp01(value: float) -> float:
     return max(0.0, min(1.0, value))
 
@@ -506,6 +517,10 @@ def main(argv: Sequence[str] | None = None) -> None:
     excel_path = Path(args.excel_path) if args.excel_path else output_dir / "summary.xlsx"
     write_excel(rows, metrics, highlights, excel_path)
     print(f"\nExcel report saved to {excel_path}")
+
+    csv_path = Path(args.csv_path) if args.csv_path else output_dir / "summary.csv"
+    write_csv(rows, metrics, csv_path)
+    print(f"CSV report saved to {csv_path}")
 
     if args.visualize:
         vis_dir = Path(args.visualization_dir) if args.visualization_dir else output_dir / "visualizations"

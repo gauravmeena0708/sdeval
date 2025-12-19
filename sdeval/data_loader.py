@@ -15,14 +15,24 @@ def load_csv(path: Path) -> pd.DataFrame:
         path: Path to the CSV file
 
     Returns:
-        Loaded DataFrame
+        Loaded DataFrame with whitespace stripped from categorical columns
 
     Raises:
         FileNotFoundError: If the file doesn't exist
     """
     if not path.exists():
         raise FileNotFoundError(f"CSV file not found: {path}")
-    return pd.read_csv(path)
+    
+    df = pd.read_csv(path)
+    
+    # Strip whitespace from object/categorical columns to ensure consistent comparisons
+    for col in df.columns:
+        if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
+            df[col] = df[col].astype(str).str.strip()
+            # Convert back 'nan' strings to actual NaN
+            df[col] = df[col].replace('nan', pd.NA)
+    
+    return df
 
 
 def detect_column_types(real_df: pd.DataFrame) -> Dict[str, List[str]]:
