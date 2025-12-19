@@ -79,9 +79,9 @@ class TestEndToEndWorkflow:
             col_types['numerical_columns']
         )
 
-        assert 'dcr_rate' in privacy_metrics
-        assert 'nndr_mean' in privacy_metrics
-        assert 'mean_knn_distance' in privacy_metrics
+        assert 'privacy_dcr_at_1e-06' in privacy_metrics
+        assert 'privacy_nndr' in privacy_metrics
+        assert 'privacy_distance_p50' in privacy_metrics
 
         # Step 6: Create visualizations
         viz_path = temp_output_dir / "distributions.png"
@@ -169,6 +169,6 @@ class TestEndToEndWorkflow:
         )
 
         # Should return valid metrics (even if 0 or default values)
-        # Returns base 5 metrics + 2 correlation delta metrics = 7 total
+        # Empty data returns: alpha, beta, mean_diff, std_diff, wasserstein, corr_delta = 6 metrics
         assert isinstance(stats, dict)
-        assert len(stats) == 7
+        assert len(stats) == 6  # Empty data skips KS, chi2, JSD metrics
