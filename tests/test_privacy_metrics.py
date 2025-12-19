@@ -198,11 +198,10 @@ class TestPrivacyMetricsIntegration:
         )
 
         # Check all expected metrics are present
-        assert 'dcr_rate' in metrics
-        assert 'nndr_mean' in metrics
-        assert 'mean_knn_distance' in metrics
-        assert any(key.startswith("privacy_dcr_at_") for key in metrics)
+        assert 'privacy_dcr_at_1e-06' in metrics
+        assert 'privacy_nndr' in metrics
         assert 'privacy_distance_p50' in metrics
+        assert 'privacy_distance_p95' in metrics
 
 
 class TestKAnonymity:
@@ -231,9 +230,10 @@ class TestKAnonymity:
 
         metrics = compute_privacy_metrics(real_df, synthetic_df, [])
 
-        assert metrics["dcr_rate"] == 0.0
-        assert metrics["nndr_mean"] == 0.0
-        assert metrics["mean_knn_distance"] == 0.0
+        assert metrics["privacy_dcr_at_1e-06"] == 0.0
+        assert metrics["privacy_nndr"] == 0.0
+        assert metrics["privacy_distance_p50"] == 0.0
+        assert metrics["privacy_distance_p95"] == 0.0
 
 
 class TestMembershipInference:
