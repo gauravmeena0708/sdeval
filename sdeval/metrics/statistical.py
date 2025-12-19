@@ -346,7 +346,8 @@ def compute_wasserstein_distance(real_df: pd.DataFrame, synthetic_df: pd.DataFra
 
 
 def compute_statistical_metrics(real_df: pd.DataFrame, synthetic_df: pd.DataFrame,
-                                numerical_columns: List[str], categorical_columns: List[str]) -> Dict[str, float]:
+                                numerical_columns: List[str], categorical_columns: List[str],
+                                **kwargs: Any) -> Dict[str, float]:
     """
     Compute all statistical fidelity metrics.
 
@@ -370,6 +371,11 @@ def compute_statistical_metrics(real_df: pd.DataFrame, synthetic_df: pd.DataFram
     metrics.update(_chi_square_metrics(real_df, synthetic_df))
     metrics.update(_jsd_metrics(real_df, synthetic_df))
     metrics.update(_correlation_delta_metrics(real_df, synthetic_df))
+    
+    # Remove redundant metrics
+    metrics.pop('statistical_avg_chi2', None)  # Keep only p-value
+    metrics.pop('statistical_corr_delta_mean_abs', None)  # Keep only Frobenius
+    
     return metrics
 
 
@@ -386,4 +392,9 @@ def compute_statistical_metrics_registry(ctx: MetricContext) -> Dict[str, float]
     metrics.update(_chi_square_metrics(real, syn))
     metrics.update(_jsd_metrics(real, syn))
     metrics.update(_correlation_delta_metrics(real, syn))
+    
+    # Remove redundant metrics
+    metrics.pop('statistical_avg_chi2', None)  # Keep only p-value
+    metrics.pop('statistical_corr_delta_mean_abs', None)  # Keep only Frobenius
+    
     return metrics

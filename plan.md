@@ -76,9 +76,9 @@ These are potential improvements for future versions. Current version is product
 - [x] Add correlation analysis
   - [x] Correlation matrix comparison
   - [x] Frobenius norm of difference
-- [ ] Add bootstrap confidence intervals
-  - [ ] For all statistical metrics
-  - [ ] Uncertainty quantification
+- [x] Add bootstrap confidence intervals
+  - [x] For all statistical metrics
+  - [x] Uncertainty quantification
 
 **Priority:** Medium
 **Estimated Effort:** 2-3 weeks

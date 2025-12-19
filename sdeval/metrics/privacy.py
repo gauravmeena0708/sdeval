@@ -169,21 +169,24 @@ def compute_privacy_metrics(
 ) -> Dict[str, float]:
     """
     Compute privacy metrics outside of the MetricContext registry (used by tests/examples).
+    Returns only essential metrics: dcr_1e-06, nndr, distance_p50, distance_p95
     """
     if not numerical_columns:
         return {
-            "dcr_rate": 0.0,
-            "nndr_mean": 0.0,
-            "mean_knn_distance": 0.0,
+            "privacy_dcr_at_1e-06": 0.0,
+            "privacy_nndr": 0.0,
+            "privacy_distance_p50": 0.0,
+            "privacy_distance_p95": 0.0,
         }
 
     real_data, syn_data = _prepare_numeric_data(real_df, synthetic_df, numerical_columns)
 
     if real_data.shape[1] == 0 or len(real_data) == 0 or len(syn_data) == 0:
         return {
-            "dcr_rate": 0.0,
-            "nndr_mean": 0.0,
-            "mean_knn_distance": 0.0,
+            "privacy_dcr_at_1e-06": 0.0,
+            "privacy_nndr": 0.0,
+            "privacy_distance_p50": 0.0,
+            "privacy_distance_p95": 0.0,
         }
 
     n_neighbors = 2 if len(real_data) >= 2 else 1
@@ -192,19 +195,18 @@ def compute_privacy_metrics(
     d1 = distances[:, 0]
 
     metrics = {
-        "dcr_rate": float(np.mean(d1 < dcr_threshold)),
-        "mean_knn_distance": float(np.mean(d1)),
+        "privacy_dcr_at_1e-06": float(np.mean(d1 < 1e-6)),
+        "privacy_distance_p50": float(np.percentile(d1, 50)),
+        "privacy_distance_p95": float(np.percentile(d1, 95)),
     }
 
     if n_neighbors >= 2:
         d2 = distances[:, 1]
         eps = 1e-12
-        metrics["nndr_mean"] = float(np.mean(d1 / np.maximum(d2, eps)))
+        metrics["privacy_nndr"] = float(np.mean(d1 / np.maximum(d2, eps)))
     else:
-        metrics["nndr_mean"] = 0.0
+        metrics["privacy_nndr"] = 0.0
 
-    thresholds = _clean_thresholds(dcr_thresholds) or DEFAULT_DCR_THRESHOLDS
-    metrics.update(_distance_stats(d1, thresholds))
     return metrics
 
 
@@ -566,11 +568,13 @@ def compute_privacy_metrics_registry(ctx: MetricContext) -> Dict[str, float]:
 
     metrics: Dict[str, Any] = {
         "privacy_enabled": True,
-        "privacy_dcr": float(np.mean(d1 < 1e-8)),
         "privacy_nndr": nndr_mean,
-        "privacy_knn_distance": knn_mean,
     }
-    metrics.update(_distance_stats(d1, thresholds))
+    
+    # Only keep essential DCR threshold (1e-06) and percentiles (p50, p95)
+    metrics["privacy_dcr_at_1e-06"] = float(np.mean(d1 < 1e-6))
+    metrics["privacy_distance_p50"] = float(np.percentile(d1, 50))
+    metrics["privacy_distance_p95"] = float(np.percentile(d1, 95))
 
     k_cfg = privacy_cfg.get("k_anonymity", {})
     quasi_cols = k_cfg.get("quasi_identifiers") or []
