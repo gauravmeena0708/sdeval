@@ -1,0 +1,43 @@
+{
+    "dataset_name": "default",
+    "description": "Credit Card Default dataset - Binary classification for default prediction",
+    "target_column": "default_payment_next_month",
+    "task_type": "classification",
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ],
+        "k_anonymity": {
+            "quasi_identifiers": [
+                "SEX",
+                "EDUCATION",
+                "MARRIAGE",
+                "AGE"
+            ],
+            "k": 5
+        }
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "age_range",
+                "type": "expression",
+                "expression": "(AGE >= 21) & (AGE <= 79)",
+                "description": "Age should be within reasonable credit card holder range"
+            },
+            {
+                "id": "limit_balance_positive",
+                "type": "expression",
+                "expression": "LIMIT_BAL > 0",
+                "description": "Credit limit must be positive"
+            },
+            {
+                "id": "bill_payment_consistency",
+                "type": "expression",
+                "expression": "(BILL_AMT1 >= 0) | (PAY_AMT1 >= 0)",
+                "description": "Bill amounts and payments should be non-negative"
+            }
+        ]
+    },
+    "notes": "Credit default prediction. Sensitive attributes: SEX, EDUCATION, MARRIAGE, AGE."
+}

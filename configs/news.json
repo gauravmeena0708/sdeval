@@ -1,0 +1,40 @@
+{
+    "dataset_name": "news",
+    "description": "Online News Popularity dataset - Regression for shares prediction",
+    "target_column": "shares",
+    "task_type": "regression",
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ]
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "shares_positive",
+                "type": "expression",
+                "expression": "shares > 0",
+                "description": "Number of shares must be positive"
+            },
+            {
+                "id": "word_counts_non_negative",
+                "type": "expression",
+                "expression": "(n_tokens_title >= 0) & (n_tokens_content >= 0) & (n_unique_tokens >= 0)",
+                "description": "Word counts must be non-negative"
+            },
+            {
+                "id": "unique_tokens_ratio",
+                "type": "expression",
+                "expression": "(n_unique_tokens >= 0) & (n_unique_tokens <= 1)",
+                "description": "Unique token ratio should be between 0 and 1"
+            },
+            {
+                "id": "weekday_consistency",
+                "type": "expression",
+                "expression": "(weekday_is_monday + weekday_is_tuesday + weekday_is_wednesday + weekday_is_thursday + weekday_is_friday + weekday_is_saturday + weekday_is_sunday) == 1",
+                "description": "Exactly one weekday should be true"
+            }
+        ]
+    },
+    "notes": "News article popularity prediction. No sensitive personal information."
+}

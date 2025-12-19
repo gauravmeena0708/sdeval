@@ -1,0 +1,47 @@
+{
+    "dataset_name": "diabetes",
+    "description": "Pima Indians Diabetes dataset - Binary classification for diabetes prediction",
+    "target_column": "Outcome",
+    "task_type": "classification",
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ],
+        "k_anonymity": {
+            "quasi_identifiers": [
+                "Age",
+                "Pregnancies"
+            ],
+            "k": 5
+        }
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "glucose_positive",
+                "type": "expression",
+                "expression": "Glucose > 0",
+                "description": "Glucose level must be positive"
+            },
+            {
+                "id": "blood_pressure_range",
+                "type": "expression",
+                "expression": "(BloodPressure >= 40) & (BloodPressure <= 200) | (BloodPressure == 0)",
+                "description": "Blood pressure should be realistic or missing (0)"
+            },
+            {
+                "id": "bmi_range",
+                "type": "expression",
+                "expression": "(BMI >= 10) & (BMI <= 70) | (BMI == 0)",
+                "description": "BMI should be realistic or missing (0)"
+            },
+            {
+                "id": "age_pregnancies_consistency",
+                "type": "expression",
+                "expression": "(Age >= Pregnancies + 12) | (Pregnancies == 0)",
+                "description": "Age should be reasonable given pregnancy count"
+            }
+        ]
+    },
+    "notes": "Medical dataset with sensitive health information. Age and pregnancy count are quasi-identifiers."
+}

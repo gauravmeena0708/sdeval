@@ -1,0 +1,43 @@
+{
+    "dataset_name": "shopper",
+    "description": "Online Shoppers Purchasing Intention dataset - Binary classification",
+    "target_column": "Revenue",
+    "task_type": "classification",
+    "privacy_metrics": {
+        "dcr_thresholds": [
+            1e-6
+        ],
+        "k_anonymity": {
+            "quasi_identifiers": [
+                "Month",
+                "VisitorType",
+                "Weekend",
+                "Region"
+            ],
+            "k": 3
+        }
+    },
+    "constraints": {
+        "rules": [
+            {
+                "id": "page_values_non_negative",
+                "type": "expression",
+                "expression": "(Administrative >= 0) & (Informational >= 0) & (ProductRelated >= 0)",
+                "description": "Page visit counts must be non-negative"
+            },
+            {
+                "id": "duration_consistency",
+                "type": "expression",
+                "expression": "((Administrative == 0) & (Administrative_Duration == 0)) | (Administrative > 0)",
+                "description": "Duration should be 0 if no pages visited"
+            },
+            {
+                "id": "bounce_exit_rates",
+                "type": "expression",
+                "expression": "(BounceRates >= 0) & (BounceRates <= 1) & (ExitRates >= 0) & (ExitRates <= 1)",
+                "description": "Bounce and exit rates should be between 0 and 1"
+            }
+        ]
+    },
+    "notes": "E-commerce session data. Focus on behavioral patterns and conversion prediction."
+}
