@@ -8,16 +8,18 @@ A comprehensive toolkit for evaluating synthetic tabular datasets against real t
 
 ## 🎯 Features
 
-- **12+ Evaluation Metrics** across 4 categories:
-  - Statistical Fidelity (5 metrics)
-  - Coverage & Diversity (4 metrics)
-  - Privacy Analysis (3 metrics)
-  - Constraint Satisfaction (new!)
+- **26 Essential Evaluation Metrics** across 5 categories:
+  - Statistical Fidelity (9 metrics) - Alpha/Beta precision, Wasserstein, KS, JSD, correlation delta
+  - Coverage & Diversity (4 metrics) - Uniqueness, rare category retention, missing categories
+  - Privacy Analysis (4 metrics) - DCR, NNDR, distance percentiles
+  - ML Utility (4 metrics) - TSTR evaluation for classification & regression
+  - Constraint Satisfaction (3 metrics) - Rule validation and satisfaction rates
 - **Differential Privacy Tools** - Mechanisms (Gaussian, Laplace) and parameter conversion
-- **Automatic column type detection** (numerical/categorical)
+- **Automatic column type detection** with whitespace normalization
+- **Clean JSON output** - All metrics rounded to 3 decimal places for readability
 - **Visualization tools** for distribution comparisons and KPI dashboards
 - **Bulk evaluation pipeline** that sweeps entire folders, writes Excel scorecards, and exports color-coded PNGs
-- **Comprehensive test suite** (80 tests)
+- **Comprehensive test suite** (95 tests)
 - **Production-ready** with full test coverage
 
 ## 📦 Installation
@@ -171,9 +173,10 @@ privacy = compute_privacy_metrics(
     synthetic_df.sample(n=500, random_state=42),
     col_types['numerical_columns']
 )
-print(f"DCR Rate: {privacy['dcr_rate']:.3f}")
-print(f"NNDR Mean: {privacy['nndr_mean']:.3f}")
-print(f"Mean k-NN Distance: {privacy['mean_knn_distance']:.3f}")
+print(f"DCR at 1e-6: {privacy['privacy_dcr_at_1e-06']:.3f}")
+print(f"NNDR: {privacy['privacy_nndr']:.3f}")
+print(f"Distance P50: {privacy['privacy_distance_p50']:.3f}")
+print(f"Distance P95: {privacy['privacy_distance_p95']:.3f}")
 
 # Generate visualization
 create_distribution_plots(
@@ -268,9 +271,10 @@ print(f"Results saved to {output_dir}")
     "coverage_missingness_delta": 0.001
   },
   "privacy": {
-    "dcr_rate": 0.012,
-    "nndr_mean": 0.678,
-    "mean_knn_distance": 2.341
+    "privacy_dcr_at_1e-06": 0.012,
+    "privacy_nndr": 0.678,
+    "privacy_distance_p50": 2.341,
+    "privacy_distance_p95": 4.567
   }
 }
 ```
