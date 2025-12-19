@@ -1,8 +1,15 @@
 {
-    "dataset_name": "adult",
-    "description": "UCI Adult Income dataset - Binary classification task",
+    "dataset_name": "adult_with_dp",
+    "description": "UCI Adult Income dataset with Differential Privacy metadata tracking",
     "target_column": "income",
     "task_type": "classification",
+    "differential_privacy": {
+        "enabled": true,
+        "epsilon": 1.0,
+        "delta": 1e-5,
+        "mechanism": "Gaussian",
+        "notes": "These are the DP parameters used during synthetic data generation"
+    },
     "privacy_metrics": {
         "dcr_thresholds": [
             1e-6
@@ -40,5 +47,5 @@
             }
         ]
     },
-    "notes": "Standard UCI Adult dataset with income prediction task. Column names use dots (e.g., hours.per.week) so backticks are required in expressions."
+    "notes": "This config enables DP metadata tracking. The epsilon/delta values document the privacy budget used during data generation. Use this when you've applied DP mechanisms to your training data."
 }

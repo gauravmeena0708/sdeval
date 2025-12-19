@@ -1,8 +1,12 @@
 {
     "dataset_name": "adult",
-    "description": "UCI Adult Income dataset - Binary classification task",
+    "description": "UCI Adult Income dataset with plausibility scoring enabled",
     "target_column": "income",
     "task_type": "classification",
+    "plausibility_metrics": {
+        "train_if_missing": true,
+        "train_epochs": 50
+    },
     "privacy_metrics": {
         "dcr_thresholds": [
             1e-6
@@ -40,5 +44,5 @@
             }
         ]
     },
-    "notes": "Standard UCI Adult dataset with income prediction task. Column names use dots (e.g., hours.per.week) so backticks are required in expressions."
+    "notes": "This config enables plausibility scoring with auto-training. The model will be trained on first run and cached for future evaluations."
 }

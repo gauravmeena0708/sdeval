@@ -57,21 +57,42 @@ def detect_column_types(real_df: pd.DataFrame) -> Dict[str, List[str]]:
 
 
 def load_real_data(path: str) -> pd.DataFrame:
-    """Load the real dataset for evaluation."""
+    """Load the real dataset for evaluation with whitespace normalization."""
     if not os.path.exists(path):
         raise FileNotFoundError(f"Real data CSV not found: {path}")
-    return pd.read_csv(path)
+    
+    df = pd.read_csv(path)
+    
+    # Strip whitespace from object/categorical columns
+    for col in df.columns:
+        if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
+            df[col] = df[col].astype(str).str.strip()
+            df[col] = df[col].replace('nan', pd.NA)
+    
+    return df
 
 
 def iter_synthetic_frames(input_path: str) -> Generator[Tuple[str, pd.DataFrame], None, None]:
-    """Yield (path, DataFrame) pairs for every synthetic CSV under ``input_path``."""
+    """Yield (path, DataFrame) pairs for every synthetic CSV under ``input_path`` with whitespace normalization."""
     p = Path(input_path)
     if p.is_file():
-        yield str(p), pd.read_csv(p)
+        df = pd.read_csv(p)
+        # Strip whitespace from object/categorical columns
+        for col in df.columns:
+            if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
+                df[col] = df[col].astype(str).str.strip()
+                df[col] = df[col].replace('nan', pd.NA)
+        yield str(p), df
         return
 
     if not p.is_dir():
         raise FileNotFoundError(f"Synthetic input path must be a CSV or directory: {input_path}")
 
     for csv_path in sorted(p.rglob("*.csv")):
-        yield str(csv_path), pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path)
+        # Strip whitespace from object/categorical columns
+        for col in df.columns:
+            if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
+                df[col] = df[col].astype(str).str.strip()
+                df[col] = df[col].replace('nan', pd.NA)
+        yield str(csv_path), df
