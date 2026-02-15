@@ -18,6 +18,7 @@ dependencies = [
     "torch",
     "transformers",
     "tqdm",
+    "sdmetrics",
 ]
 
 [project.optional-dependencies]

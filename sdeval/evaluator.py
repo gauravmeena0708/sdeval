@@ -95,6 +95,41 @@ class Evaluator:
 
             metric_outputs = self._run_metrics(context)
 
+            # Conditional Analysis
+            if self.settings.conditional_analysis_columns:
+                if self.settings.verbose:
+                    print("   🔬 Performing conditional analysis...")
+                
+                conditional_results = {}
+                for column in self.settings.conditional_analysis_columns:
+                    if column not in self.real_df.columns or column not in synthetic_df.columns:
+                        continue
+                    
+                    unique_values = self.real_df[column].unique()
+                    for value in unique_values:
+                        real_slice = self.real_df[self.real_df[column] == value]
+                        synth_slice = synthetic_df[synthetic_df[column] == value]
+                        
+                        if len(real_slice) < 10 or len(synth_slice) < 10:
+                            continue # Skip if slices are too small
+
+                        if self.settings.verbose:
+                            print(f"      - Analyzing slice: {column} = {value} ({len(synth_slice)} rows)")
+
+                        slice_context = MetricContext(
+                            real_df=real_slice,
+                            synthetic_df=synth_slice,
+                            settings=self.settings,
+                            synthetic_path=synthetic_path,
+                        )
+                        slice_metrics = self._run_metrics(slice_context)
+                        
+                        # Sanitize value for use in JSON key
+                        sanitized_value = str(value).replace(".", "_")
+                        conditional_results[f"{column}_eq_{sanitized_value}"] = slice_metrics
+
+                metric_outputs["conditional_analysis"] = conditional_results
+
             filename = Path(synthetic_path).stem
             summary_path = write_summary(self.settings.output_dir, filename, metric_outputs)
             summary_paths.append(summary_path)

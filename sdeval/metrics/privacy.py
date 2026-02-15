@@ -551,7 +551,6 @@ def compute_privacy_metrics_registry(ctx: MetricContext) -> Dict[str, float]:
     distances, _ = nbrs.kneighbors(synthetic_data_array)
 
     d1 = distances[:, 0]
-    knn_mean = float(np.mean(d1)) if len(d1) else 0.0
 
     if n_neighbors >= 2:
         d2 = distances[:, 1]

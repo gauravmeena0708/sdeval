@@ -27,6 +27,7 @@ class EvaluatorSettings:
     raw_config: Dict[str, Any] = field(default_factory=dict)
     constraints: Dict[str, Any] = field(default_factory=dict)
     metrics: List[str] = field(default_factory=list)
+    conditional_analysis_columns: List[str] = field(default_factory=list)
     verbose: bool = False
     quiet: bool = False
     show_progress: bool = True
@@ -79,6 +80,7 @@ def load_settings_from_args(args) -> EvaluatorSettings:
         raw_config=config_dict,
         constraints=constraints_dict,
         metrics=metrics,
+        conditional_analysis_columns=args.conditional_columns or config_dict.get("conditional_analysis_columns", []),
         visualize=args.visualize,
         html_report=args.html_report,
     )
