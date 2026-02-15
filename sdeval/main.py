@@ -48,6 +48,8 @@ Examples:
                        help="Optional JSON file containing constraint rules.")
     parser.add_argument("--metrics", nargs="+",
                        help="Subset of metrics to run (default: all).")
+    parser.add_argument("--conditional-columns", nargs="+",
+                       help="One or more columns to perform conditional analysis on.")
     parser.add_argument("--seed", type=int,
                        help="Random seed for reproducibility.")
 
