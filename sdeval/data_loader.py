@@ -24,6 +24,8 @@ def load_csv(path: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"CSV file not found: {path}")
     
     df = pd.read_csv(path)
+    # Normalize column names: replace dots with hyphens
+    df.columns = [str(c).replace('.', '-') for c in df.columns]
     
     # Strip whitespace from object/categorical columns to ensure consistent comparisons
     for col in df.columns:
@@ -62,6 +64,8 @@ def load_real_data(path: str) -> pd.DataFrame:
         raise FileNotFoundError(f"Real data CSV not found: {path}")
     
     df = pd.read_csv(path)
+    # Normalize column names: replace dots with hyphens
+    df.columns = [str(c).replace('.', '-') for c in df.columns]
     
     # Strip whitespace from object/categorical columns
     for col in df.columns:
@@ -77,6 +81,8 @@ def iter_synthetic_frames(input_path: str) -> Generator[Tuple[str, pd.DataFrame]
     p = Path(input_path)
     if p.is_file():
         df = pd.read_csv(p)
+        # Normalize column names: replace dots with hyphens
+        df.columns = [str(c).replace('.', '-') for c in df.columns]
         # Strip whitespace from object/categorical columns
         for col in df.columns:
             if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
@@ -90,6 +96,8 @@ def iter_synthetic_frames(input_path: str) -> Generator[Tuple[str, pd.DataFrame]
 
     for csv_path in sorted(p.rglob("*.csv")):
         df = pd.read_csv(csv_path)
+        # Normalize column names: replace dots with hyphens
+        df.columns = [str(c).replace('.', '-') for c in df.columns]
         # Strip whitespace from object/categorical columns
         for col in df.columns:
             if df[col].dtype == 'object' or str(df[col].dtype).startswith('category'):
